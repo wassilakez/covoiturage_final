@@ -1,0 +1,223 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<style>
+.sv-header{background:var(--ink);padding:28px 0;position:relative;overflow:hidden;}
+.sv-header-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 120% at 80% 50%,rgba(0,82,255,0.18) 0%,transparent 70%);}
+.sv-header-inner{position:relative;z-index:1;}
+.sv-h1{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px;letter-spacing:0.2px;}
+.sv-bar{background:white;border-radius:100px;display:flex;align-items:center;padding:5px 5px 5px 0;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+.sv-f{flex:1;display:flex;align-items:center;padding:9px 18px;border-right:1.5px solid var(--border);gap:8px;}
+.sv-f:last-of-type{border-right:none;}
+.sv-f i{color:var(--ink4);font-size:13px;flex-shrink:0;}
+.sv-f input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:transparent;width:100%;font-weight:500;}
+.sv-f input::placeholder{color:var(--ink4);font-weight:400;}
+.sv-go{background:var(--blue);color:white;border:none;border-radius:100px;padding:12px 26px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:6px;transition:background 0.15s;}
+.sv-go:hover{background:var(--blue-dk);}
+
+.sv-body{display:flex;gap:20px;padding:28px 0 56px;align-items:flex-start;}
+
+/* FILTRES */
+.sv-aside{width:230px;flex-shrink:0;}
+.sv-filter{background:white;border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--sh);}
+.sv-filter-title{font-size:11px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:13px;}
+.sv-fopt{display:flex;align-items:center;gap:9px;margin-bottom:8px;cursor:pointer;}
+.sv-fopt:last-child{margin-bottom:0;}
+.sv-fopt input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer;flex-shrink:0;}
+.sv-fopt label{font-size:13px;color:var(--ink2);cursor:pointer;}
+.sv-range{accent-color:var(--blue);width:100%;margin-top:2px;}
+.sv-range-val{font-size:12px;color:var(--ink3);margin-top:7px;}
+.sv-range-val strong{color:var(--ink);}
+
+/* RÉSULTATS */
+.sv-main{flex:1;}
+.sv-count{font-size:13px;color:var(--ink3);margin-bottom:14px;padding:10px 14px;background:white;border:1px solid var(--border);border-radius:var(--rsm);}
+.sv-count strong{color:var(--ink);}
+
+/* TRIP ROW */
+.sv-trip{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:10px;display:block;text-decoration:none;transition:all 0.18s;box-shadow:var(--sh);}
+.sv-trip:hover{border-color:var(--blue);box-shadow:var(--sh-md);transform:translateY(-1px);}
+.sv-trip-inner{display:flex;align-items:center;gap:18px;}
+.sv-times{min-width:190px;}
+.sv-ta{display:flex;align-items:center;gap:10px;}
+.sv-t{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--ink);}
+.sv-dur{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.sv-line{width:100%;height:2px;background:var(--border);border-radius:2px;position:relative;}
+.sv-line::before,.sv-line::after{content:'';position:absolute;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--blue);}
+.sv-line::before{left:0;}.sv-line::after{right:0;}
+.sv-dur-txt{font-size:10px;color:var(--ink4);font-weight:500;}
+.sv-cities{display:flex;justify-content:space-between;margin-top:3px;}
+.sv-city{font-size:11px;font-weight:600;color:var(--ink4);}
+.sv-info{flex:1;}
+.sv-route{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.sv-date{font-size:12px;color:var(--ink4);}
+.sv-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.sv-tag{font-size:11px;color:var(--ink3);background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 9px;}
+.sv-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:130px;flex-shrink:0;}
+.sv-driv{display:flex;align-items:center;gap:7px;}
+.sv-dav{width:30px;height:30px;border-radius:50%;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--blue);overflow:hidden;flex-shrink:0;}
+.sv-dav img{width:100%;height:100%;object-fit:cover;}
+.sv-dname{font-size:12px;font-weight:600;color:var(--ink);}
+.sv-drating{font-size:11px;color:var(--ink4);}
+.sv-price{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--blue);letter-spacing:-0.3px;}
+.sv-price-sub{font-size:11px;color:var(--ink4);}
+.sv-btn{background:var(--blue);color:white;border:none;border-radius:8px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s;}
+.sv-btn:hover{background:var(--blue-dk);}
+
+/* EMPTY */
+.sv-empty{text-align:center;padding:52px;background:white;border-radius:var(--r);border:1.5px dashed var(--border);}
+.sv-empty i{font-size:36px;color:var(--ink4);display:block;margin-bottom:14px;}
+.sv-empty p{color:var(--ink4);font-size:14px;margin:0;}
+
+@media(max-width:768px){
+  .sv-bar{flex-direction:column;border-radius:16px;padding:10px;}
+  .sv-f{border-right:none;border-bottom:1.5px solid var(--border);padding:10px 14px;}
+  .sv-f:last-of-type{border-bottom:none;}
+  .sv-go{width:100%;margin-left:0;border-radius:10px;}
+  .sv-body{flex-direction:column;padding:16px 0 40px;}
+  .sv-aside{width:100%;}
+  .sv-trip-inner{flex-wrap:wrap;}
+}
+</style>
+
+<!-- HEADER -->
+<div class="sv-header">
+  <div class="sv-header-bg"></div>
+  <div class="container sv-header-inner">
+    <div class="sv-h1">Rechercher un trajet</div>
+     <form method="get" class="sv-bar">
+  <div class="sv-f">
+    <i class="fas fa-map-marker-alt"></i>
+    <input type="text" name="departure" placeholder="Ville de départ" value="{{ request.GET.departure }}">
+  </div>
+  <div class="sv-f">
+    <i class="fas fa-flag-checkered"></i>
+    <input type="text" name="destination" placeholder="Destination" value="{{ request.GET.destination }}">
+  </div>
+  <div class="sv-f">
+    <i class="fas fa-calendar"></i>
+    <input type="date" name="date" value="{{ request.GET.date }}">
+  </div>
+  <!-- ➕ AJOUTER LES FILTRES ICI (cachés mais envoyés) -->
+  <input type="hidden" name="time_slot" id="time_slot_input" value="{{ request.GET.time_slot }}">
+  <input type="hidden" name="price_max" id="price_max_input" value="{{ request.GET.price_max|default:'2000' }}">
+  <input type="hidden" name="rating" id="rating_input" value="{{ request.GET.rating }}">
+  <button type="submit" class="sv-go">Rechercher</button>
+</form>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="container">
+  <div class="sv-body">
+
+    <!-- FILTRES -->
+    <aside class="sv-aside">
+      <div class="sv-filter">
+        <div class="sv-filter-title">Heure de départ</div>
+       <div class="sv-fopt"><input type="checkbox" name="time_slot" value="morning" id="f1"> <label for="f1">Matin (00h — 12h)</label></div>
+       <div class="sv-fopt"><input type="checkbox" name="time_slot" value="afternoon" id="f2"> <label for="f2">Après-midi (12h — 18h)</label></div>
+        <div class="sv-fopt"><input type="checkbox" name="time_slot" value="evening" id="f3"> <label for="f3">Soir (18h — 00h)</label></div>
+      </div>
+      <div class="sv-filter">
+        <div class="sv-filter-title">Prix maximum</div>
+        <input type="range" name="price_max" class="sv-range" min="100" max="3000" value="2000" id="priceRange" oninput="document.getElementById('priceVal').textContent=this.value">
+        <div class="sv-range-val">Jusqu'à <strong id="priceVal">2000</strong> DA</div>
+      </div>
+      <div class="sv-filter">
+        <div class="sv-filter-title">Note conducteur</div>
+        <div class="sv-fopt"><input type="checkbox" name="rating" value="4.5" id="f4"> <label for="f4">4.5 et plus</label></div>
+<div class="sv-fopt"><input type="checkbox" name="rating" value="4.0" id="f5"> <label for="f5">4.0 et plus</label></div>
+<div class="sv-fopt"><input type="checkbox" name="rating" value="all" id="f6" checked> <label for="f6">Tous</label></div>
+      </div>
+    </aside>
+
+    <!-- LISTE -->
+    <div class="sv-main">
+      <div class="sv-count">
+        <strong>{{ trips|length }} trajet{{ trips|length|pluralize }}</strong> trouvé{{ trips|length|pluralize }}
+        {% if request.GET.departure %} · départ <strong>{{ request.GET.departure }}</strong>{% endif %}
+        {% if request.GET.destination %} · arrivée <strong>{{ request.GET.destination }}</strong>{% endif %}
+      </div>
+
+      {% for trip in trips %}
+      <a class="sv-trip" href="{% url 'trip_detail' trip.id %}">
+        <div class="sv-trip-inner">
+          <div class="sv-times">
+            <div class="sv-ta">
+              <div class="sv-t">{{ trip.departure_datetime|date:"H:i" }}</div>
+              <div class="sv-dur">
+                <div class="sv-line"></div>
+                <div class="sv-dur-txt">{{ trip.duration|default:"—" }}</div>
+              </div>
+              <div class="sv-t">{{ trip.arrival_time|default:"—" }}</div>
+            </div>
+            <div class="sv-cities">
+              <div class="sv-city">{{ trip.departure_city_name }}</div>
+              <div class="sv-city">{{ trip.arrival_city_name }}</div>
+            </div>
+          </div>
+          <div class="sv-info">
+            <div class="sv-route">{{ trip.departure_city_name }} — {{ trip.arrival_city_name }}</div>
+              <div class="sv-date">
+    📅 {{ trip.departure_datetime|slice:"0:10"|date:"d/m/Y" }} à ⏰ {{ trip.departure_datetime|slice:"11:16" }}
+</div>
+            <div class="sv-tags">
+              <span class="sv-tag">{{ trip.available_seats }} place{{ trip.available_seats|pluralize }}</span>
+              {% if trip.driver_verified %}<span class="sv-tag">Vérifié</span>{% endif %}
+            </div>
+          </div>
+          <div class="sv-right">
+            <div class="sv-driv">
+              <div class="sv-dav">
+                {% if trip.driver_photo and trip.driver_photo != 'null' %}
+                  <img src="{{ trip.driver_photo }}" alt="">
+                {% else %}
+                  {{ trip.driver_name|slice:":1"|upper|default:"C" }}
+                {% endif %}
+              </div>
+              <div>
+                <div class="sv-dname">{{ trip.driver_name|default:"—" }}</div>
+                <div class="sv-drating">{% if trip.driver_avg_rating %}{{ trip.driver_avg_rating }} / 5{% else %}Nouveau{% endif %}</div>
+              </div>
+            </div>
+            <div>
+              <div class="sv-price">{{ trip.price_per_seat }} DA</div>
+              <div class="sv-price-sub">par personne</div>
+            </div>
+            <button class="sv-btn">Voir</button>
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <div class="sv-empty">
+        <i class="fas fa-car"></i>
+        <p>Aucun trajet trouvé pour ces critères.<br>Essayez d'autres villes ou dates.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>
+// Mettre à jour les champs cachés quand les filtres changent
+document.querySelectorAll('input[name="time_slot"]').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const checked = document.querySelector('input[name="time_slot"]:checked');
+        document.getElementById('time_slot_input').value = checked ? checked.value : '';
+        document.querySelector('form').submit();
+    });
+});
+
+document.getElementById('priceRange').addEventListener('change', function() {
+    document.getElementById('price_max_input').value = this.value;
+    document.querySelector('form').submit();
+});
+
+document.querySelectorAll('input[name="rating"]').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const checked = document.querySelector('input[name="rating"]:checked');
+        document.getElementById('rating_input').value = checked && checked.value !== 'all' ? checked.value : '';
+        document.querySelector('form').submit();
+    });
+});
+</script>
+{% endblock %}

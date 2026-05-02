@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-glass">
+        <div class="auth-visual">
+            <div class="brand-badge">
+                <i class="fas fa-caravan"></i>
+                <span>Caravan</span>
+            </div>
+            <h1>Content de vous revoir !</h1>
+            <p>Connectez-vous pour continuer votre voyage avec nous.</p>
+            <div class="floating-cards">
+                <span class="mini-card"><i class="fas fa-map-marker-alt me-1"></i> +20 villes</span>
+                <span class="mini-card"><i class="fas fa-smile me-1"></i> 10k+ membres</span>
+                <span class="mini-card"><i class="fas fa-star me-1"></i> 4.8/5</span>
+            </div>
+        </div>
+        <div class="auth-form">
+            <h2>Connexion</h2>
+            <p>Accédez à votre compte</p>
+            
+            <form id="loginForm">
+                <div class="field">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                
+                <div class="field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Mot de passe" required>
+                </div>
+                
+                <button type="submit" class="btn-primary-custom">
+                    <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                </button>
+            </form>
+            
+            <div class="switch">
+                Nouveau membre ? <a href="/register/">Créer un compte</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    
+    try {
+        const response = await fetch(`${API_AUTH}/login/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            localStorage.setItem("access_token", data.access);
+            localStorage.setItem("user_id", data.user.id);
+            alert("✅ Connexion réussie ! Bonjour " + data.user.first_name);
+            window.location.href = "/profile/";
+        } else {
+            alert("❌ " + (data.detail || "Email ou mot de passe incorrect"));
+        }
+    } catch (err) {
+        alert("❌ Erreur de connexion au serveur");
+    }
+});
+</script>
+{% endblock %}

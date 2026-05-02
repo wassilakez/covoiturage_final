@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caravan — Covoiturage en Algérie</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#0052FF;--blue-dk:#0040CC;--blue-lt:#EEF3FF;
+  --ink:#0A1628;--ink2:#2D3F55;--ink3:#5A7082;--ink4:#8FA5BF;
+  --border:#DDE5F5;--bg:#F0F4FF;--bg2:#E8EEFA;--white:#FFFFFF;
+  --ok:#00B37D;--ok-bg:#E6F9F3;--warn:#D97706;--warn-bg:#FEF9EC;
+  --err:#DC2626;--err-bg:#FEE2E2;
+  --r:14px;--rsm:10px;
+  --sh:0 1px 3px rgba(0,30,100,0.05),0 4px 12px rgba(0,30,100,0.07);
+  --sh-md:0 4px 24px rgba(0,30,100,0.1);--sh-lg:0 8px 40px rgba(0,30,100,0.14);
+  --nav:60px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);padding-top:var(--nav);-webkit-font-smoothing:antialiased;line-height:1.55;font-size:14px;}
+
+/* NAV */
+.navbar{height:var(--nav);background:var(--ink);border-bottom:1px solid rgba(255,255,255,0.06);padding:0;position:fixed;top:0;width:100%;z-index:1000;}
+.navbar>.container{height:100%;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.navbar-brand{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:white!important;text-decoration:none;letter-spacing:-0.4px;flex-shrink:0;}
+.navbar-brand span{color:var(--blue);}
+.nav-center{display:flex;align-items:center;gap:2px;}
+.nav-link{color:rgba(255,255,255,0.5)!important;font-size:13px;font-weight:500;padding:6px 12px!important;border-radius:8px;transition:all 0.15s;text-decoration:none;}
+.nav-link:hover{color:white!important;background:rgba(255,255,255,0.07);}
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.nav-pill{font-size:13px;font-weight:600;border-radius:8px;padding:7px 16px;text-decoration:none;transition:all 0.15s;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-block;}
+.nav-pill-ghost{color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.14);background:transparent;}
+.nav-pill-ghost:hover{color:white;border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.06);}
+.nav-pill-solid{background:var(--blue);color:white;box-shadow:0 2px 8px rgba(0,82,255,0.35);}
+.nav-pill-solid:hover{background:var(--blue-dk);color:white;}
+.nav-sep{width:1px;height:18px;background:rgba(255,255,255,0.1);}
+.nav-bell{position:relative;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.5);transition:all 0.15s;}
+.nav-bell:hover{background:rgba(255,255,255,0.1);color:white;}
+.nav-bell i{font-size:13px;}
+.bell-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--err);border:1.5px solid var(--ink);display:none;}
+.nav-av{width:32px;height:32px;border-radius:50%;background:var(--blue);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden;text-decoration:none;cursor:pointer;transition:opacity 0.15s;flex-shrink:0;}
+.nav-av:hover{opacity:0.8;}
+.nav-av img{width:100%;height:100%;object-fit:cover;}
+.dropdown-menu{border:1px solid var(--border);border-radius:var(--rsm);box-shadow:var(--sh-lg);padding:6px;background:white;min-width:190px;margin-top:6px!important;}
+.dropdown-item{font-size:13px;color:var(--ink2);font-weight:500;border-radius:7px;padding:8px 12px;transition:all 0.1s;}
+.dropdown-item i{width:16px;color:var(--blue);margin-right:6px;}
+.dropdown-item:hover{background:var(--bg);color:var(--ink);}
+.dropdown-item.text-danger{color:var(--err)!important;}
+.dropdown-item.text-danger i{color:var(--err);}
+.dropdown-item.text-danger:hover{background:var(--err-bg);}
+.dropdown-divider{margin:4px 0;border-color:var(--border);}
+.notif-dd{width:360px;max-height:440px;overflow-y:auto;padding:0;border-radius:var(--r);box-shadow:var(--sh-lg);margin-top:8px!important;}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--border);transition:background 0.12s;text-decoration:none;display:block;color:var(--ink);}
+.notif-item:hover{background:var(--bg);}
+.notif-unread{background:var(--blue-lt);}
+
+/* FOOTER */
+.footer{background:var(--ink);color:white;padding:52px 0 0;margin-top:0;border-top:none;}
+.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;padding-bottom:44px;}
+.ft-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:white;margin-bottom:10px;letter-spacing:-0.3px;}
+.ft-desc{font-size:13px;color:rgba(255,255,255,0.38);line-height:1.75;max-width:220px;}
+.ft-social{display:flex;gap:7px;margin-top:16px;}
+.ft-social a{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.45);text-decoration:none;transition:all 0.15s;font-size:12px;}
+.ft-social a:hover{background:var(--blue);color:white;}
+.ft-col h4{font-size:10px;font-weight:700;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px;}
+.ft-col ul{list-style:none;padding:0;margin:0;}
+.ft-col ul li{margin-bottom:9px;}
+.ft-col ul li a{color:rgba(255,255,255,0.45);text-decoration:none;font-size:13px;transition:color 0.15s;}
+.ft-col ul li a:hover{color:white;}
+.ft-bottom{border-top:1px solid rgba(255,255,255,0.07);padding:16px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.ft-bottom p,.ft-copy{font-size:12px;color:rgba(255,255,255,0.22);margin:0;}
+
+/* SHARED */
+.badge-ok{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;background:var(--ok-bg);color:var(--ok);}
+.badge-warn{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;background:var(--warn-bg);color:var(--warn);}
+.badge-err{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;background:var(--err-bg);color:var(--err);}
+.badge-blue{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;background:var(--blue-lt);color:var(--blue);}
+.badge-muted{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;background:var(--bg2);color:var(--ink4);}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.btn-cv{display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;border-radius:var(--rsm);padding:9px 18px;border:none;cursor:pointer;text-decoration:none;transition:all 0.15s;}
+.btn-cv-primary{background:var(--blue);color:white;box-shadow:0 2px 8px rgba(0,82,255,0.28);}
+.btn-cv-primary:hover{background:var(--blue-dk);color:white;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,82,255,0.38);}
+.btn-cv-outline{background:white;color:var(--blue);border:1.5px solid var(--blue);}
+.btn-cv-outline:hover{background:var(--blue-lt);color:var(--blue);}
+.btn-cv-ghost{background:var(--bg);color:var(--ink3);border:1px solid var(--border);}
+.btn-cv-ghost:hover{background:var(--bg2);color:var(--ink);}
+.btn-cv-ok{background:white;color:var(--ok);border:1.5px solid #6EE7B7;}
+.btn-cv-ok:hover{background:var(--ok-bg);}
+.btn-cv-err{background:white;color:var(--err);border:1.5px solid #FCA5A5;}
+.btn-cv-err:hover{background:var(--err-bg);}
+.btn-cv-sm{font-size:12px;padding:6px 12px;}
+.btn-cv-full{width:100%;justify-content:center;}
+.fld{width:100%;padding:10px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rsm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+.fld:focus{border-color:var(--blue);background:white;box-shadow:0 0 0 3px rgba(0,82,255,0.08);}
+.fld::placeholder{color:var(--ink4);}
+.fld-lbl{display:block;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.cv-card{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.cv-card-head{padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;}
+.cv-card-lbl{font-size:11px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:0.8px;}
+.cv-card-body{padding:20px;}
+.cv-tbl-wrap{overflow-x:auto;}
+.cv-tbl{width:100%;border-collapse:collapse;}
+.cv-tbl thead th{font-size:11px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:0.7px;padding:10px 16px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg);}
+.cv-tbl tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+.cv-tbl tbody tr:last-child{border-bottom:none;}
+.cv-tbl tbody tr:hover td{background:var(--bg);}
+.cv-tbl tbody td{padding:12px 16px;font-size:13px;color:var(--ink3);vertical-align:middle;}
+.cv-tbl tbody td:first-child{color:var(--ink);font-weight:500;}
+.av-cell{display:flex;align-items:center;gap:8px;}
+.av-xs{width:28px;height:28px;border-radius:50%;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--blue);flex-shrink:0;overflow:hidden;}
+.av-xs img{width:100%;height:100%;object-fit:cover;}
+#toast-container{position:fixed;top:72px;right:20px;z-index:9999;}
+.cv-toast{background:white;border-radius:var(--rsm);padding:12px 16px;margin-bottom:8px;box-shadow:var(--sh-md);border-left:3px solid var(--blue);display:flex;justify-content:space-between;align-items:center;gap:12px;min-width:260px;animation:toastIn 0.2s ease;}
+.cv-toast.ok{border-left-color:var(--ok);}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+@media(max-width:768px){.nav-center{display:none;}.ft-grid{grid-template-columns:1fr 1fr;gap:24px;}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="{% url 'home' %}" class="navbar-brand">Cara<span>van</span></a>
+    <div class="nav-center">
+      <a href="{% url 'search_trips' %}" class="nav-link">Trajets</a>
+      {% if request.session.access_token %}
+        {% if request.session.user.role == 'driver' or request.session.user.role == 'both' %}
+          <a href="{% url 'publish_trip' %}" class="nav-link">Publier</a>
+        {% endif %}
+        <a href="{% url 'my_bookings' %}" class="nav-link">Réservations</a>
+      {% endif %}
+    </div>
+    <div class="nav-right">
+      {% if request.session.access_token %}
+        <div class="dropdown">
+          <div class="nav-bell" id="notificationBell" data-bs-toggle="dropdown">
+            <i class="fas fa-bell"></i>
+            <span id="notifDot" class="bell-dot"></span>
+          </div>
+          <div class="dropdown-menu dropdown-menu-end notif-dd" id="notifPanel">
+            <div style="text-align:center;padding:24px;color:var(--ink4);font-size:13px;">Chargement...</div>
+          </div>
+        </div>
+        <div class="nav-sep"></div>
+        <div class="dropdown d-flex align-items-center">
+          <div class="nav-av" data-bs-toggle="dropdown">
+            {% if request.session.user.profile_picture %}
+              <img src="{{ request.session.user.profile_picture }}" alt="">
+            {% else %}
+              {{ request.session.user.first_name|slice:":1" }}{{ request.session.user.last_name|slice:":1" }}
+            {% endif %}
+          </div>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user"></i>Mon profil</a></li>
+            {% if request.session.user.role == 'admin' %}
+            <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}"><i class="fas fa-shield-alt"></i>Administration</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Déconnexion</a></li>
+          </ul>
+        </div>
+      {% else %}
+        <a href="{% url 'login' %}" class="nav-pill nav-pill-ghost">Connexion</a>
+        <a href="{% url 'register' %}" class="nav-pill nav-pill-solid">Inscription</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="ft-grid">
+      <div>
+        <div class="ft-logo">Caravan</div>
+        <p class="ft-desc">Covoiturage simple, économique et sécurisé à travers les 58 wilayas d'Algérie.</p>
+        <div class="ft-social">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="ft-col">
+        <h4>Plateforme</h4>
+        <ul>
+          <li><a href="{% url 'search_trips' %}">Trouver un trajet</a></li>
+          <li><a href="{% url 'publish_trip' %}">Publier un trajet</a></li>
+          <li><a href="#">Comment ça marche</a></li>
+          <li><a href="#">Nos engagements</a></li>
+        </ul>
+      </div>
+      <div class="ft-col">
+        <h4>Assistance</h4>
+        <ul>
+          <li><a href="#">Centre d'aide</a></li>
+          <li><a href="#">Contactez-nous</a></li>
+          <li><a href="#">Conditions générales</a></li>
+          <li><a href="#">Confidentialité</a></li>
+        </ul>
+      </div>
+      <div class="ft-col">
+        <h4>Applications</h4>
+        <ul>
+          <li><a href="#">iOS — App Store</a></li>
+          <li><a href="#">Android — Google Play</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="ft-bottom">
+      <p>© 2026 Caravan. Tous droits réservés.</p>
+      <span class="ft-copy">Fait avec soin en Algérie</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function loadNotifications(){
+  fetch('/api/notifications/').then(r=>r.json()).then(data=>{
+    const dot=document.getElementById('notifDot');
+    dot.style.display=data.unread_count>0?'block':'none';
+    const panel=document.getElementById('notifPanel');
+    if(!data.notifications||!data.notifications.length){panel.innerHTML='<div style="text-align:center;padding:24px;color:var(--ink4);font-size:13px;">Aucune notification</div>';return;}
+    const icons={booking_request:'fa-clock',booking_confirmed:'fa-check-circle',booking_cancelled:'fa-times-circle',refund:'fa-credit-card'};
+    let h='';
+    data.notifications.forEach(n=>{
+      h+=`<a href="${n.link||'#'}" class="notif-item${n.is_read?'':' notif-unread'}"><div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:28px;height:28px;border-radius:8px;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas ${icons[n.type]||'fa-bell'}" style="font-size:11px;color:var(--blue);"></i></div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--ink);">${n.title}</div><div style="font-size:12px;color:var(--ink3);margin-top:2px;">${n.message}</div><div style="font-size:11px;color:var(--ink4);margin-top:4px;">${n.created_at}</div></div>${!n.is_read?`<button class="mark-rd" data-id="${n.id}" style="background:none;border:none;color:var(--ink4);font-size:12px;cursor:pointer;flex-shrink:0;">lire</button>`:''}</div></a>`;
+    });
+    h+=`<div style="text-align:center;padding:10px;"><a href="#" id="markAll" style="font-size:12px;color:var(--ink3);text-decoration:none;">Tout marquer comme lu</a></div>`;
+    panel.innerHTML=h;
+    document.querySelectorAll('.mark-rd').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();fetch(`/api/notifications/${b.dataset.id}/read/`).then(()=>loadNotifications());}));
+    document.getElementById('markAll')?.addEventListener('click',e=>{e.preventDefault();fetch('/api/notifications/mark-all-read/').then(()=>loadNotifications());});
+  }).catch(()=>{});
+}
+document.addEventListener('DOMContentLoaded',()=>{loadNotifications();setInterval(loadNotifications,10000);});
+document.getElementById('notificationBell')?.addEventListener('click',loadNotifications);
+function showToast(msg,type){const c=document.getElementById('toast-container');if(!c)return;const t=document.createElement('div');t.className='cv-toast'+(type==='success'?' ok':'');t.innerHTML=`<span style="font-size:13px;">${msg}</span><button style="background:none;border:none;cursor:pointer;color:var(--ink4);font-size:16px;" onclick="this.parentElement.remove()">×</button>`;c.appendChild(t);setTimeout(()=>t.remove(),5000);}
+document.querySelectorAll('.alert').forEach(m=>{showToast(m.innerText,'success');m.remove();});
+
+function showMessage(msg, type) {
+    var container = document.getElementById('page-messages');
+    if (!container) {
+        var main = document.querySelector('main');
+        container = document.createElement('div');
+        container.id = 'page-messages';
+        container.style.cssText = 'position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 1000; width: auto; max-width: 90%;';
+        main.parentNode.insertBefore(container, main);
+    }
+    var div = document.createElement('div');
+    div.style.cssText = 'background: ' + (type === 'success' ? '#d4edda' : '#f8d7da') + '; color: ' + (type === 'success' ? '#155724' : '#721c24') + '; padding: 12px 24px; border-radius: 10px; margin-bottom: 10px; text-align: center; font-size: 14px; font-weight: 500;';
+    div.innerHTML = msg + '<button style="margin-left:15px;background:none;border:none;font-size:18px;cursor:pointer;" onclick="this.parentElement.remove()">×</button>';
+    container.appendChild(div);
+    setTimeout(function() { if(div.parentElement) div.remove(); }, 4000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        var text = alert.innerText;
+        var type = alert.classList.contains('alert-success') ? 'success' : 'error';
+        showMessage(text, type);
+        alert.remove();
+    });
+});
+
+
+</script>
+</body>
+</html>

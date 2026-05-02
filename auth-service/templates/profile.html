@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Profil{% endblock %}
+{% block content %}
+<div class="profile-header">
+    <h2 id="fullName">Chargement...</h2>
+    <p id="userEmail" class="text-muted"></p>
+    <p id="userPhone" class="text-muted"></p>
+    <p id="userRole" class="badge bg-info"></p>
+</div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="stat-card">
+            <div class="stat-number" id="passengerTrips">0</div>
+            <p>Trajets passager</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-card">
+            <div class="stat-number" id="driverTrips">0</div>
+            <p>Trajets conducteur</p>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h4>Mes réservations</h4>
+    <div id="bookingsList"></div>
+</div>
+
+<script>
+const token = localStorage.getItem("access_token");
+if (!token) window.location.href = "/login/";
+
+async function loadProfile() {
+    try {
+        const response = await fetch(`${API_AUTH}/profile/`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (response.status === 401) {
+            localStorage.removeItem("access_token");
+            window.location.href = "/login/";
+            return;
+        }
+        
+        const data = await response.json();
+        const user = data.user;
+        const profile = data.profile;
+        
+        document.getElementById("fullName").innerText = `${user.first_name} ${user.last_name}`;
+        document.getElementById("userEmail").innerHTML = `<i class="bi bi-envelope"></i> ${user.email}`;
+        document.getElementById("userPhone").innerHTML = `<i class="bi bi-phone"></i> ${profile.phone || 'Non renseigné'}`;
+        document.getElementById("userRole").innerText = user.role || 'passenger';
+        document.getElementById("passengerTrips").innerText = profile.trips_as_passenger || 0;
+        document.getElementById("driverTrips").innerText = profile.trips_as_driver || 0;
+        
+        // Charger les réservations
+        loadBookings();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadBookings() {
+    try {
+        const response = await fetch(`${API_BOOKINGS}/bookings/`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        const bookings = await response.json();
+        const bookingsDiv = document.getElementById("bookingsList");
+        
+        if (bookings.length === 0) {
+            bookingsDiv.innerHTML = '<p class="text-muted">Aucune réservation</p>';
+            return;
+        }
+        
+        bookingsDiv.innerHTML = bookings.map(booking => `
+            <div class="trip-card">
+                <strong>Trajet #${booking.trip_id}</strong><br>
+                Places: ${booking.seats_booked}<br>
+                Statut: <span class="badge ${booking.status === 'confirmed' ? 'bg-success' : 'bg-warning'}">${booking.status}</span><br>
+                Date: ${new Date(booking.created_at).toLocaleDateString()}
+            </div>
+        `).join('');
+    } catch (err) {
+        document.getElementById("bookingsList").innerHTML = '<p class="text-danger">Erreur chargement réservations</p>';
+    }
+}
+
+loadProfile();
+</script>
+{% endblock %}

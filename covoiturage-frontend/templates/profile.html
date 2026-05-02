@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+.pf-cover{height:190px;background:var(--ink);position:relative;overflow:hidden;}
+.pf-cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 120% at 80% 50%,rgba(0,82,255,0.22) 0%,transparent 70%);}
+.pf-wrap{max-width:860px;margin:0 auto;padding:0 24px 60px;}
+.pf-id{display:flex;align-items:flex-end;gap:20px;margin-top:-52px;margin-bottom:22px;position:relative;z-index:2;}
+.pf-av{width:100px;height:100px;border-radius:50%;background:#0052FF;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:white;border:4px solid white;flex-shrink:0;overflow:hidden;}
+.pf-av img{width:100%;height:100%;object-fit:cover;}
+.pf-name{font-size:24px;font-weight:800;color:#0A1628;margin-top: 50px;}
+.pf-username{font-size:13px;color:#8FA5BF;}
+.pf-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;border-radius:20px;padding:4px 12px;margin-top:8px;}
+.pf-b-drv{background:#FEF9EC;color:#D97706;}
+.pf-b-pax{background:#E6F9F3;color:#00B37D;}
+.pf-stats{display:flex;background:white;border-radius:14px;margin-bottom:18px;}
+.pf-s{flex:1;padding:18px 20px;text-align:center;border-right:1px solid #DDE5F5;}
+.pf-s:last-child{border-right:none;}
+.pf-s-val{font-size:28px;font-weight:800;color:#0052FF;}
+.pf-s-lbl{font-size:11px;color:#8FA5BF;margin-top:5px;}
+.pf-star{color:#F59E0B;}
+.pf-card{background:white;border-radius:14px;margin-bottom:16px;border:1px solid #DDE5F5;}
+.pf-ch{padding:14px 20px;border-bottom:1px solid #DDE5F5;background:#F0F4FF;display:flex;align-items:center;gap:9px;}
+.pf-ch-icon{width:28px;height:28px;border-radius:8px;background:#EEF3FF;display:flex;align-items:center;justify-content:center;}
+.pf-ch-icon i{color:#0052FF;}
+.pf-ch-lbl{font-size:11px;font-weight:700;color:#8FA5BF;}
+.pf-cb{padding:22px 24px;}
+.pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.pf-field-lbl{font-size:10px;font-weight:700;color:#8FA5BF;margin-bottom:5px;}
+.pf-field-val{font-size:14px;font-weight:600;color:#0A1628;}
+.pf-vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px;}
+.pf-vitem{background:white;border:1px solid #DDE5F5;border-radius:10px;padding:12px;}
+.pf-vitem-lbl{font-size:10px;font-weight:700;color:#8FA5BF;margin-bottom:4px;}
+.pf-vitem-val{font-size:14px;font-weight:600;color:#0A1628;}
+.pf-member{padding:11px 14px;background:#EEF3FF;border-radius:10px;margin-top:16px;}
+.pf-member-txt{font-size:12px;color:#0052FF;}
+</style>
+
+<div class="pf-cover"></div>
+<div class="container">
+<div class="pf-wrap">
+
+  <div class="pf-id">
+    <div class="pf-av">
+      {% if user.profile_picture and user.profile_picture != '/media/profiles/default.jpg' %}
+        <img src="{{ user.profile_picture }}" alt="Photo">
+      {% else %}
+        {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+      {% endif %}
+    </div>
+    <div>
+      <div class="pf-name">{{ user.first_name }} {{ user.last_name }}</div>
+      <div class="pf-username">@{{ user.username }}</div>
+      <div class="pf-badge {% if user.role == 'driver' %}pf-b-drv{% else %}pf-b-pax{% endif %}">
+        {{ user.role|title }}
+      </div>
+    </div>
+  </div>
+
+  <div class="pf-stats">
+    <div class="pf-s"><div class="pf-s-val">{{ user.trips_completed|default:0 }}</div><div class="pf-s-lbl">Trajets</div></div>
+    {% if user.role == 'driver' %}
+    <div class="pf-s"><div class="pf-s-val">{{ user.trips_as_driver|default:0 }}</div><div class="pf-s-lbl">Trajets conduits</div></div>
+    <div class="pf-s"><div class="pf-s-val">{{ user.rating_as_driver|default:"—" }}{% if user.rating_as_driver %} <span class="pf-star">★</span>{% endif %}</div><div class="pf-s-lbl">Note</div></div>
+    {% else %}
+    <div class="pf-s"><div class="pf-s-val">{{ user.trips_as_passenger|default:0 }}</div><div class="pf-s-lbl">Trajets passager</div></div>
+    <div class="pf-s"><div class="pf-s-val">{{ user.rating_as_passenger|default:"—" }}{% if user.rating_as_passenger %} <span class="pf-star">★</span>{% endif %}</div><div class="pf-s-lbl">Note</div></div>
+    {% endif %}
+  </div>
+
+  <div class="pf-card">
+    <div class="pf-ch"><div class="pf-ch-icon"><i class="fas fa-user"></i></div><div class="pf-ch-lbl">Informations</div></div>
+    <div class="pf-cb">
+      <div class="pf-grid">
+        <div><div class="pf-field-lbl">Email</div><div class="pf-field-val">{{ user.email|default:"—" }}</div></div>
+        <div><div class="pf-field-lbl">Téléphone</div><div class="pf-field-val">{{ user.phone|default:"—" }}</div></div>
+        <div><div class="pf-field-lbl">Wilaya</div><div class="pf-field-val">{{ user.city|default:"Non renseignée" }}</div></div>
+        <div><div class="pf-field-lbl">Bio</div><div class="pf-field-val">{{ user.bio|default:"Aucune bio" }}</div></div>
+      </div>
+      <div class="pf-member"><i class="fas fa-calendar-alt"></i><span class="pf-member-txt">Membre depuis {{ user.date_joined|slice:"0:10" }}</span></div>
+    </div>
+  </div>
+
+  {% if user.role == 'driver' %}
+  <div class="pf-card">
+    <div class="pf-ch"><div class="pf-ch-icon"><i class="fas fa-car"></i></div><div class="pf-ch-lbl">Véhicule</div></div>
+    <div class="pf-cb">
+      <div class="pf-vgrid">
+        <div class="pf-vitem"><div class="pf-vitem-lbl">Marque</div><div class="pf-vitem-val">{{ user.vehicle_brand|default:"—" }}</div></div>
+        <div class="pf-vitem"><div class="pf-vitem-lbl">Modèle</div><div class="pf-vitem-val">{{ user.vehicle_model|default:"—" }}</div></div>
+        <div class="pf-vitem"><div class="pf-vitem-lbl">Année</div><div class="pf-vitem-val">{{ user.vehicle_year|default:"—" }}</div></div>
+        <div class="pf-vitem"><div class="pf-vitem-lbl">Couleur</div><div class="pf-vitem-val">{{ user.vehicle_color|default:"—" }}</div></div>
+        <div class="pf-vitem"><div class="pf-vitem-lbl">Plaque</div><div class="pf-vitem-val">{{ user.vehicle_license_plate|default:"—" }}</div></div>
+        <div class="pf-vitem"><div class="pf-vitem-lbl">Places</div><div class="pf-vitem-val">{{ user.vehicle_seats|default:"—" }}</div></div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+</div>
+{% endblock %}

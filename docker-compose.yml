@@ -1,0 +1,171 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+
+  consul:
+    image: consul:1.15
+    container_name: consul
+    ports:
+      - "8500:8500"
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+    networks:
+      - app-network
+
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - app-network
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_NAME=auth_db
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - RABBITMQ_HOST=rabbitmq
+    networks:
+      - app-network
+
+  trip-service:
+    build: ./Trip_service
+    container_name: trip-service
+    ports:
+      - "8082:8002"
+    depends_on:
+      - postgres
+      - auth-service
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_NAME=trip_db
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - AUTH_SERVICE_URL=http://auth-service:8081
+    networks:
+      - app-network
+
+  booking-service:
+    build: ./booking-service
+    container_name: booking-service
+    ports:
+      - "8083:8011"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - auth-service
+      - trip-service
+      - payment-service
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_NAME=booking_db
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - TRIPS_SERVICE_URL=http://trip-service:8002/api
+      - PAYMENT_SERVICE_URL=http://payment-service:8000
+      - RABBITMQ_HOST=rabbitmq
+    networks:
+      - app-network
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8084:8000"
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_NAME=payment_db
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - RABBITMQ_HOST=rabbitmq
+    networks:
+      - app-network
+
+  search-service:
+    build: ./search-service
+    container_name: search-service
+    ports:
+      - "8085:8003"
+    depends_on:
+      - postgres
+      - trip-service
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_NAME=trip_db
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - TRIP_SERVICE_URL=http://trip-service:8002/api
+    networks:
+      - app-network
+
+  frontend:
+    build: ./covoiturage-frontend
+    container_name: frontend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - trip-service
+      - booking-service
+      - payment-service
+      - search-service
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - TRIP_SERVICE_URL=http://trip-service:8002/api
+      - BOOKING_SERVICE_URL=http://booking-service:8011/api
+      - PAYMENT_SERVICE_URL=http://payment-service:8000
+      - SEARCH_SERVICE_URL=http://search-service:8003/api
+    networks:
+      - app-network
+
+  notification-consumer:
+    build: ./covoiturage-frontend
+    command: python notifications/consumer.py
+    container_name: notification-consumer
+    restart: always
+    networks:
+      - app-network
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - PYTHONUNBUFFERED=1
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

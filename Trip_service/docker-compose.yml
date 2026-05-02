@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:15
+    container_name: trip-db
+    environment:
+      - POSTGRES_DB=trajet_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  trajet-service:
+    build: .
+    container_name: trajet-service
+    command: python manage.py runserver 0.0.0.0:8002
+    volumes:
+      - .:/app
+    ports:
+      - "8002:8002"
+    environment:
+      - DB_NAME=trajet_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

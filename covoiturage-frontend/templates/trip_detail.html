@@ -1,0 +1,658 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+
+<style>
+body{font-family:'DM Sans',sans-serif!important;background:#F0F4FF!important;padding-top:0!important;color:#0A1628;}
+nav.navbar,footer.footer{display:none!important;}
+*{box-sizing:border-box;margin:0;padding:0;}
+
+/* ── NAVBAR CUSTOM ── */
+.cv-nav{
+  height:56px;
+  background:#0A1628;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  position:sticky;top:0;z-index:100;
+}
+.cv-nav-logo{
+  font-family:'Syne',sans-serif;
+  font-size:18px;font-weight:800;
+  color:white;text-decoration:none;letter-spacing:-0.3px;
+}
+.cv-nav-logo span{color:#0052FF;}
+.cv-nav-links{display:flex;align-items:center;gap:4px;}
+.cv-nav-link{
+  color:rgba(255,255,255,0.55);font-size:13px;font-weight:500;
+  text-decoration:none;padding:6px 12px;border-radius:8px;
+  transition:all 0.15s;display:flex;align-items:center;gap:6px;
+}
+.cv-nav-link:hover{color:white;background:rgba(255,255,255,0.07);}
+.cv-nav-link.active{color:white;background:rgba(0,82,255,0.2);}
+.cv-nav-link svg{width:15px;height:15px;fill:currentColor;opacity:0.7;}
+.cv-nav-right{display:flex;align-items:center;gap:8px;}
+.cv-nav-btn{
+  background:rgba(0,82,255,0.15);color:#6699FF;
+  border:1px solid rgba(0,82,255,0.25);
+  border-radius:8px;padding:6px 14px;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  text-decoration:none;transition:all 0.15s;
+}
+.cv-nav-btn:hover{background:rgba(0,82,255,0.25);color:white;}
+.cv-nav-btn.primary{background:#0052FF;color:white;border-color:#0052FF;}
+.cv-nav-btn.primary:hover{background:#0040CC;}
+.cv-nav-av{
+  width:30px;height:30px;border-radius:50%;
+  background:#0052FF;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:white;
+  text-decoration:none;overflow:hidden;
+}
+.cv-nav-av img{width:100%;height:100%;object-fit:cover;}
+.cv-nav-sep{width:1px;height:18px;background:rgba(255,255,255,0.1);margin:0 4px;}
+
+:root{
+  --ink:#0A1628;
+  --ink2:#3D526B;
+  --ink3:#8FA5BF;
+  --blue:#0052FF;
+  --blue-dark:#0040CC;
+  --blue-glow:rgba(0,82,255,0.15);
+  --blue-soft:#EEF3FF;
+  --border:#DDE5F5;
+  --bg:#F0F4FF;
+  --white:#FFFFFF;
+  --success:#00B37D;
+  --success-bg:#E6F9F3;
+  --warning:#F59E0B;
+  --warning-bg:#FEF9EC;
+  --danger:#EF4444;
+  --r:14px;
+  --shadow:0 1px 3px rgba(0,30,100,0.06),0 4px 16px rgba(0,30,100,0.08);
+  --shadow-lg:0 8px 40px rgba(0,30,100,0.14);
+}
+
+/* ── HERO ── */
+.dt-hero{
+  background:var(--ink);
+  padding:0;
+  position:relative;
+  overflow:hidden;
+}
+.dt-hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 80% at 80% 50%, rgba(0,82,255,0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 20% 80%, rgba(0,82,255,0.08) 0%, transparent 70%);
+}
+.dt-hero-noise{
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.4;
+}
+.dt-hero-inner{
+  position:relative;z-index:2;
+  padding:36px 40px 44px;
+  max-width:860px;margin:0 auto;
+}
+.dt-back{
+  display:inline-flex;align-items:center;gap:8px;
+  color:rgba(255,255,255,0.55);font-size:13px;font-weight:500;
+  text-decoration:none;margin-bottom:28px;
+  transition:color 0.15s;
+  font-family:'DM Sans',sans-serif;
+}
+.dt-back:hover{color:white;}
+.dt-back svg{width:15px;height:15px;fill:currentColor;}
+.dt-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,82,255,0.2);
+  border:1px solid rgba(0,82,255,0.4);
+  color:rgba(255,255,255,0.85);
+  font-size:11px;font-weight:600;letter-spacing:0.5px;
+  border-radius:20px;padding:4px 12px;
+  margin-bottom:14px;
+}
+.dt-badge-dot{width:6px;height:6px;border-radius:50%;background:#00B37D;}
+.dt-hero-route{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(28px,5vw,40px);
+  font-weight:800;color:white;
+  letter-spacing:-1px;line-height:1.1;
+  margin-bottom:10px;
+}
+.dt-hero-sep{color:rgba(0,82,255,0.7);margin:0 8px;}
+.dt-hero-date{
+  font-size:14px;color:rgba(255,255,255,0.55);
+  display:flex;align-items:center;gap:8px;
+}
+.dt-hero-date svg{width:14px;height:14px;fill:rgba(255,255,255,0.35);}
+
+/* ── BODY ── */
+.dt-body{
+  max-width:860px;margin:0 auto;
+  padding:0 40px 60px;
+  position:relative;
+}
+.dt-grid{
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:20px;
+  margin-top:-20px;
+}
+
+/* ── CARD ── */
+.dt-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.dt-card-head{
+  padding:18px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.dt-card-head-icon{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--blue-soft);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.dt-card-head-icon svg{width:16px;height:16px;fill:var(--blue);}
+.dt-card-label{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;}
+.dt-card-body{padding:24px;}
+
+/* ── STATS ROW ── */
+.dt-stats{
+  display:flex;gap:0;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+}
+.dt-stat{
+  flex:1;padding:20px 22px;
+  border-right:1px solid var(--border);
+}
+.dt-stat:last-child{border-right:none;}
+.dt-stat-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+.dt-stat-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--blue);letter-spacing:-1px;line-height:1;}
+.dt-stat-val.neutral{color:var(--ink);}
+.dt-stat-sub{font-size:12px;color:var(--ink3);margin-top:4px;}
+.dt-stat-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:600;
+  border-radius:20px;padding:3px 8px;
+  margin-top:6px;
+}
+.dt-stat-chip.ok{background:var(--success-bg);color:var(--success);}
+.dt-stat-chip.warn{background:var(--warning-bg);color:var(--warning);}
+.dt-stat-chip.err{background:#FEE2E2;color:var(--danger);}
+.dt-stat-chip svg{width:11px;height:11px;fill:currentColor;}
+
+/* ── TIMELINE ── */
+.dt-timeline{padding:8px 0;}
+.dt-tl-row{display:flex;gap:16px;align-items:stretch;}
+.dt-tl-col{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0;}
+.dt-tl-dot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--blue);
+  box-shadow:0 0 0 3px rgba(0,82,255,0.15);
+  flex-shrink:0;margin-top:4px;
+}
+.dt-tl-dot.end{background:var(--ink);}
+.dt-tl-line{width:2px;flex:1;background:var(--border);min-height:28px;margin:4px 0;}
+.dt-tl-info{padding-bottom:24px;flex:1;}
+.dt-tl-row:last-child .dt-tl-info{padding-bottom:0;}
+.dt-tl-time{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;}
+.dt-tl-city{font-size:14px;font-weight:600;color:var(--ink);margin-top:2px;}
+.dt-tl-sub{font-size:12px;color:var(--ink3);margin-top:2px;}
+
+/* ── DRIVER CARD ── */
+.dt-driver{
+  display:flex;align-items:center;gap:16px;
+  padding:16px;
+  background:var(--bg);
+  border-radius:12px;
+}
+.dt-driver-av{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--blue-soft);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;
+  font-size:20px;font-weight:700;color:var(--blue);
+  flex-shrink:0;overflow:hidden;
+}
+.dt-driver-av img{width:100%;height:100%;object-fit:cover;}
+.dt-driver-name{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.dt-driver-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.dt-driver-rating{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:4px;}
+.dt-star{color:#F59E0B;}
+.dt-driver-trips{font-size:12px;color:var(--ink3);}
+
+/* ── SIDEBAR ── */
+.dt-sidebar{display:flex;flex-direction:column;gap:16px;}
+.dt-price-card{
+  background:var(--ink);
+  border-radius:var(--r);
+  padding:24px;
+  box-shadow:var(--shadow-lg);
+  position:relative;overflow:hidden;
+}
+.dt-price-card::before{
+  content:'';position:absolute;
+  top:-40px;right:-40px;
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,82,255,0.3) 0%,transparent 70%);
+}
+.dt-price-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.dt-price-val{
+  font-family:'Syne',sans-serif;
+  font-size:44px;font-weight:800;color:white;
+  letter-spacing:-1.5px;line-height:1;margin-bottom:4px;
+}
+.dt-price-val span{font-size:20px;font-weight:600;color:rgba(255,255,255,0.5);}
+.dt-price-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;}
+.dt-seats-row{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:20px;
+  padding:12px 14px;
+  background:rgba(255,255,255,0.06);
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.08);
+}
+.dt-seat-dots{display:flex;gap:5px;}
+.dt-seat-dot{width:10px;height:10px;border-radius:50%;}
+.dt-seat-dot.avail{background:var(--blue);}
+.dt-seat-dot.taken{background:rgba(255,255,255,0.15);}
+.dt-seats-txt{font-size:12px;color:rgba(255,255,255,0.5);margin-left:auto;}
+
+/* ── FORM INSIDE CARD ── */
+.dt-form-group{margin-bottom:16px;}
+.dt-form-lbl{
+  display:block;font-size:11px;font-weight:600;
+  color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.5px;
+  margin-bottom:6px;
+}
+.dt-form-input{
+  width:100%;padding:10px 14px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:white;
+  outline:none;transition:border-color 0.15s;
+}
+.dt-form-input:focus{border-color:rgba(0,82,255,0.6);}
+.dt-form-select{
+  width:100%;padding:10px 14px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:white;
+  outline:none;cursor:pointer;
+  -webkit-appearance:auto;
+  appearance:auto;
+}
+.dt-form-select option{background:#1a2a4a;color:white;}
+.dt-btn-reserve{
+  width:100%;
+  background:var(--blue);color:white;border:none;
+  border-radius:12px;padding:14px;
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  box-shadow:0 4px 20px rgba(0,82,255,0.4);
+  letter-spacing:0.2px;
+}
+.dt-btn-reserve:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,82,255,0.5);}
+.dt-btn-login{
+  display:block;text-align:center;
+  background:var(--blue);color:white;text-decoration:none;
+  border-radius:12px;padding:14px;
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  transition:all 0.2s;box-shadow:0 4px 20px rgba(0,82,255,0.4);
+}
+.dt-btn-login:hover{background:var(--blue-dark);color:white;transform:translateY(-2px);}
+.dt-note{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-top:10px;line-height:1.6;}
+.dt-driver-msg{
+  text-align:center;padding:16px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+  color:rgba(255,255,255,0.4);font-size:13px;
+}
+.dt-full-msg{
+  text-align:center;padding:16px;
+  background:rgba(239,68,68,0.08);
+  border:1px solid rgba(239,68,68,0.2);
+  border-radius:10px;
+  color:#FCA5A5;font-size:13px;
+}
+
+@media(max-width:700px){
+  .dt-hero-inner{padding:24px 20px 36px;}
+  .dt-body{padding:0 16px 48px;}
+  .dt-grid{grid-template-columns:1fr;}
+  .dt-stats{flex-direction:column;}
+  .dt-stat{border-right:none;border-bottom:1px solid var(--border);}
+  .dt-stat:last-child{border-bottom:none;}
+}
+</style>
+
+<!-- ══ NAVBAR ══ -->
+<nav class="cv-nav">
+  <a href="{% url 'home' %}" class="cv-nav-logo">Cara<span>van</span></a>
+  <div class="cv-nav-links">
+    <a href="{% url 'search_trips' %}" class="cv-nav-link">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      Trajets
+    </a>
+    {% if request.session.access_token %}
+      {% if request.session.user.role == 'driver' or request.session.user.role == 'both' %}
+      <a href="{% url 'publish_trip' %}" class="cv-nav-link">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Publier
+      </a>
+      {% endif %}
+      <a href="{% url 'my_bookings' %}" class="cv-nav-link">
+        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+        Réservations
+      </a>
+    {% endif %}
+  </div>
+  <div class="cv-nav-right">
+    {% if request.session.access_token %}
+      <div class="cv-nav-sep"></div>
+      <a href="{% url 'profile' %}" class="cv-nav-av">
+        {% if request.session.user.profile_picture %}
+          <img src="{{ request.session.user.profile_picture }}" alt="">
+        {% else %}
+          {{ request.session.user.first_name|slice:":1" }}
+        {% endif %}
+      </a>
+      <a href="{% url 'logout' %}" class="cv-nav-btn" style="color:rgba(255,255,255,0.4);background:transparent;border-color:transparent;font-size:12px;">Déco.</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="cv-nav-btn">Connexion</a>
+      <a href="{% url 'register' %}" class="cv-nav-btn primary">Inscription</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="dt-hero">
+  <div class="dt-hero-bg"></div>
+  <div class="dt-hero-noise"></div>
+  <div class="dt-hero-inner">
+    <a href="{% url 'search_trips' %}" class="dt-back">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Retour aux trajets
+    </a>
+    <div class="dt-badge">
+      <span class="dt-badge-dot"></span>
+      Trajet disponible
+    </div>
+    <div class="dt-hero-route">
+      {{ trip.departure_city_name }}<span class="dt-hero-sep">→</span>{{ trip.arrival_city_name }}
+    </div>
+   <div class="dt-hero-date">
+    <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+    📅 {{ trip.date_fr }} à ⏰ {{ trip.time_only }}
+</div>
+  </div>
+</div>
+
+<!-- ══ BODY ══ -->
+<div class="dt-body">
+   {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="background: #FEF2F2; border: 1px solid #FCA5A5; color: #DC2626; padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; font-size: 13px;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+  <div class="dt-grid">
+
+    <!-- COLONNE GAUCHE -->
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:-20px;">
+
+      <!-- Stats -->
+      <div class="dt-stats">
+        <div class="dt-stat">
+          <div class="dt-stat-lbl">Prix</div>
+          <div class="dt-stat-val">{{ trip.price_per_seat }}<small style="font-size:16px;color:var(--ink3);font-family:'DM Sans'"> DA</small></div>
+          <div class="dt-stat-sub">par place</div>
+        </div>
+        <div class="dt-stat">
+          <div class="dt-stat-lbl">Places dispo.</div>
+          <div class="dt-stat-val neutral">{{ trip.available_seats }}<small style="font-size:18px;color:var(--ink3);font-family:'DM Sans'"> / {{ trip.total_seats }}</small></div>
+          {% if trip.available_seats == 0 %}
+            <span class="dt-stat-chip err"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>Complet</span>
+          {% elif trip.available_seats <= 2 %}
+            <span class="dt-stat-chip warn"><svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>Plus que {{ trip.available_seats }}</span>
+          {% else %}
+            <span class="dt-stat-chip ok"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Disponible</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Itinéraire -->
+      <div class="dt-card">
+        <div class="dt-card-head">
+          <div class="dt-card-head-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          </div>
+          <div class="dt-card-label">Itinéraire</div>
+        </div>
+        <div class="dt-card-body">
+          <div class="dt-timeline">
+            <div class="dt-tl-row">
+              <div class="dt-tl-col">
+                <div class="dt-tl-dot"></div>
+                <div class="dt-tl-line"></div>
+              </div>
+              <div class="dt-tl-info">
+                <div class="dt-tl-time">{{ trip.time_only }}</div>
+                <div class="dt-tl-city">{{ trip.departure_city_name }}</div>
+                <div class="dt-tl-sub">Point de départ</div>
+              </div>
+            </div>
+            <div class="dt-tl-row">
+              <div class="dt-tl-col">
+                <div class="dt-tl-dot end"></div>
+              </div>
+              <div class="dt-tl-info">
+                <div class="dt-tl-time">{{ trip.time_only }}</div>
+                <div class="dt-tl-city">{{ trip.arrival_city_name }}</div>
+                <div class="dt-tl-sub">Arrivée estimée{% if trip.duration %} · {{ trip.duration }}{% endif %}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conducteur -->
+      <div class="dt-card">
+        <div class="dt-card-head">
+          <div class="dt-card-head-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/></svg>
+          </div>
+          <div class="dt-card-label">Conducteur</div>
+        </div>
+        <div class="dt-card-body">
+          <div class="dt-driver">
+            <div class="dt-driver-av">
+              {% if trip.driver_photo and trip.driver_photo != 'null' %}
+                <img src="{{ trip.driver_photo }}" alt="{{ trip.driver_name }}">
+              {% else %}
+                {{ trip.driver_name|slice:":1"|upper|default:"C" }}
+              {% endif %}
+            </div>
+            <div>
+              <div class="dt-driver-name">{{ trip.driver_name|default:"Conducteur" }}</div>
+              <div class="dt-driver-meta">
+                <div class="dt-driver-rating">
+                  <span class="dt-star">★</span>
+                  {% if trip.driver_avg_rating %}
+                    {{ trip.driver_avg_rating }} / 5
+                    <span class="dt-driver-trips">({{ trip.driver_rating_count }} avis)</span>
+                  {% else %}
+                    <span class="dt-driver-trips">Aucun avis</span>
+                  {% endif %}
+                </div>
+                <span style="width:1px;height:12px;background:var(--border);"></span>
+                <div class="dt-driver-trips">{{ trip.driver_trips|default:"0" }} trajet{{ trip.driver_trips|default:"0"|pluralize }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLONNE DROITE — RÉSERVATION -->
+    <div class="dt-sidebar" style="margin-top:-20px;">
+      <div class="dt-price-card">
+        <div class="dt-price-lbl">Prix par place</div>
+        <div class="dt-price-val">{{ trip.price_per_seat }} <span>DA</span></div>
+        <div class="dt-price-sub">par personne</div>
+
+        <!-- Places -->
+        <div class="dt-seats-row">
+          <div class="dt-seat-dots">
+            {% for i in trip.seats_range %}
+              {% if i <= trip.available_seats %}
+                <div class="dt-seat-dot avail"></div>
+              {% else %}
+                <div class="dt-seat-dot taken"></div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <span class="dt-seats-txt">{{ trip.available_seats }}/{{ trip.total_seats }} dispo.</span>
+        </div>
+
+      <!-- FORM / MSG -->
+{% if request.session.access_token %}
+  {% if request.session.user.id != trip.driver_id %}
+    {% if trip.available_seats > 0 %}
+      <form method="post" action="{% url 'request_booking' trip.id %}">
+        {% csrf_token %}
+        <div class="dt-form-group">
+          <label class="dt-form-lbl">Nombre de places</label>
+          <input type="number" name="seats" class="dt-form-input" min="1" max="{{ trip.available_seats }}" value="1" required>
+        </div>
+        <div class="dt-form-group">
+          <label class="dt-form-lbl">Mode de paiement</label>
+          <select name="payment_method" class="dt-form-select" id="payment_method">
+            <option value="cash">Espèces</option>
+            <option value="cib">Carte bancaire</option>
+            <option value="ccp">CCP</option>
+            <option value="dahabiya">Dahabiya</option>
+          </select>
+        </div>
+        
+        <!-- CHAMPS DE PAIEMENT -->
+        <div id="payment-fields" style="display: none;">
+          <!-- Carte bancaire -->
+          <div id="cib-fields" style="display: none;">
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">💳 Numéro de carte</label>
+              <input type="text" name="card_number" class="dt-form-input" placeholder="4111 1111 1111 1111">
+            </div>
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">📅 Date d'expiration</label>
+              <input type="text" name="expiry" class="dt-form-input" placeholder="MM/AA">
+            </div>
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">🔒 CVV</label>
+              <input type="password" name="cvv" class="dt-form-input" placeholder="123">
+            </div>
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">👤 Nom du titulaire</label>
+              <input type="text" name="cardholder" class="dt-form-input" placeholder="Nom sur la carte">
+            </div>
+          </div>
+          
+          <!-- CCP -->
+          <div id="ccp-fields" style="display: none;">
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">🏦 Numéro CCP</label>
+              <input type="text" name="ccp_number" class="dt-form-input" placeholder="1234 5678 9012">
+            </div>
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">🔑 Clé CCP</label>
+              <input type="text" name="ccp_key" class="dt-form-input" placeholder="XX">
+            </div>
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">👤 Nom du titulaire</label>
+              <input type="text" name="ccp_holder" class="dt-form-input" placeholder="Nom complet">
+            </div>
+          </div>
+          
+          <!-- Dahabiya -->
+          <div id="dahabiya-fields" style="display: none;">
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">💰 Numéro Dahabiya</label>
+              <input type="text" name="dahabiya_number" class="dt-form-input" placeholder="1234 5678 9012 3456">
+            </div>
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">🔐 Code secret</label>
+              <input type="password" name="dahabiya_code" class="dt-form-input" placeholder="****">
+            </div>
+            <div class="dt-form-group">
+              <label class="dt-form-lbl">👤 Nom du titulaire</label>
+              <input type="text" name="dahabiya_holder" class="dt-form-input" placeholder="Nom complet">
+            </div>
+          </div>
+        </div>
+        
+        <button type="submit" class="dt-btn-reserve">Confirmer la réservation</button>
+      </form>
+      <div class="dt-note">Annulation gratuite jusqu'à 24h avant le départ</div>
+    {% else %}
+      <div class="dt-full-msg">Ce trajet est complet</div>
+    {% endif %}
+  {% else %}
+    <div class="dt-driver-msg">Vous êtes le conducteur de ce trajet</div>
+  {% endif %}
+{% else %}
+  <a href="{% url 'login' %}" class="dt-btn-login">Connectez-vous pour réserver</a>
+  <div class="dt-note">Inscription gratuite · 2 minutes</div>
+{% endif %}
+<script>
+document.getElementById('payment_method').addEventListener('change', function() {
+    var method = this.value;
+    var container = document.getElementById('payment-fields');
+    var cibFields = document.getElementById('cib-fields');
+    var ccpFields = document.getElementById('ccp-fields');
+    var dahabiyaFields = document.getElementById('dahabiya-fields');
+    
+    container.style.display = 'none';
+    cibFields.style.display = 'none';
+    ccpFields.style.display = 'none';
+    dahabiyaFields.style.display = 'none';
+    
+    document.querySelectorAll('#payment-fields input').forEach(i => i.required = false);
+    
+    if (method === 'cib') {
+        container.style.display = 'block';
+        cibFields.style.display = 'block';
+        cibFields.querySelectorAll('input').forEach(i => i.required = true);
+    } else if (method === 'ccp') {
+        container.style.display = 'block';
+        ccpFields.style.display = 'block';
+        ccpFields.querySelectorAll('input').forEach(i => i.required = true);
+    } else if (method === 'dahabiya') {
+        container.style.display = 'block';
+        dahabiyaFields.style.display = 'block';
+        dahabiyaFields.querySelectorAll('input').forEach(i => i.required = true);
+    }
+});
+</script>
+{% endblock %}

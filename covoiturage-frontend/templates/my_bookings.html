@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<style>
+.bk-hero{background:var(--ink);padding:36px 0 0;position:relative;overflow:hidden;}
+.bk-hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 50% 120% at 80% 50%,rgba(0,82,255,0.18) 0%,transparent 70%);}
+.bk-hero-inner{position:relative;z-index:1;padding:0 0 0;}
+.bk-hero h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:white;letter-spacing:-0.5px;margin-bottom:4px;}
+.bk-hero p{font-size:13px;color:rgba(255,255,255,0.45);}
+
+.bk-tabs-bar{background:var(--ink);border-bottom:1px solid rgba(255,255,255,0.08);}
+.bk-tabs{display:flex;gap:0;padding:0;}
+.bk-tab{
+  padding:14px 22px;font-size:13px;font-weight:600;
+  color:rgba(255,255,255,0.4);cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all 0.15s;display:flex;align-items:center;gap:7px;
+}
+.bk-tab:hover{color:rgba(255,255,255,0.75);}
+.bk-tab.active{color:white;border-bottom-color:var(--blue);}
+.bk-count{font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;}
+.bk-count-blue{background:rgba(0,82,255,0.25);color:rgba(255,255,255,0.8);}
+.bk-count-red{background:rgba(220,38,38,0.25);color:#FCA5A5;}
+
+.bk-body{padding:24px 0 56px;}
+.bk-sec{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh);}
+.bk-sec-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg);}
+.bk-sec-lbl{font-size:11px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:7px;}
+.bk-sec-lbl i{color:var(--blue);}
+.bk-sec-count{font-size:12px;color:var(--ink4);}
+
+.bk-row{display:flex;align-items:center;gap:14px;padding:15px 20px;border-bottom:1px solid var(--border);transition:background 0.1s;}
+.bk-row:last-child{border-bottom:none;}
+.bk-row:hover{background:var(--bg);}
+.bk-av{width:40px;height:40px;border-radius:50%;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--blue);flex-shrink:0;overflow:hidden;}
+.bk-av img{width:100%;height:100%;object-fit:cover;}
+.bk-av-amber{background:#FEF3C7;color:#B45309;}
+.bk-av-green{background:var(--ok-bg);color:var(--ok);}
+.bk-info{flex:1;min-width:0;}
+.bk-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.bk-meta{font-size:12px;color:var(--ink4);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.bk-meta i{color:var(--ink4);font-size:11px;}
+.bk-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+
+/* status badges */
+.bs{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;flex-shrink:0;}
+.bs i{font-size:9px;}
+.bs-pending{background:var(--warn-bg);color:var(--warn);}
+.bs-confirmed{background:var(--ok-bg);color:var(--ok);}
+.bs-completed{background:var(--blue-lt);color:var(--blue);}
+.bs-cancelled{background:var(--err-bg);color:var(--err);}
+
+/* action buttons */
+.ab{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;border-radius:8px;padding:6px 13px;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all 0.15s;white-space:nowrap;}
+.ab i{font-size:11px;}
+.ab-primary{background:var(--blue);color:white;}
+.ab-primary:hover{background:var(--blue-dk);color:white;}
+.ab-outline{background:white;color:var(--blue);border:1.5px solid var(--blue);}
+.ab-outline:hover{background:var(--blue-lt);}
+.ab-ok{background:white;color:var(--ok);border:1.5px solid #6EE7B7;}
+.ab-ok:hover{background:var(--ok-bg);}
+.ab-err{background:white;color:var(--err);border:1.5px solid #FCA5A5;}
+.ab-err:hover{background:var(--err-bg);}
+
+/* rating */
+.bk-rating-wrap{background:var(--bg);border-top:1px solid var(--border);padding:14px 20px;}
+.rating-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.rating-lbl{font-size:12px;font-weight:600;color:var(--ink3);white-space:nowrap;}
+.stars{display:flex;flex-direction:row-reverse;gap:1px;}
+.stars input{display:none;}
+.stars label{font-size:24px;color:#E5E7EB;cursor:pointer;transition:color 0.1s;line-height:1;}
+.stars input:checked ~ label,.stars label:hover,.stars label:hover ~ label{color:#F59E0B;}
+.rating-input{flex:1;min-width:180px;background:white;border:1.5px solid var(--border);border-radius:8px;padding:8px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color 0.15s;}
+.rating-input:focus{border-color:var(--blue);}
+.rating-input::placeholder{color:var(--ink4);}
+
+/* empty */
+.bk-empty{padding:44px;text-align:center;}
+.bk-empty i{font-size:36px;color:var(--ink4);display:block;margin-bottom:12px;}
+.bk-empty p{font-size:13px;color:var(--ink4);}
+.bk-empty a{color:var(--blue);font-weight:600;text-decoration:none;}
+
+@media(max-width:768px){
+  .bk-hero,.bk-tabs,.bk-body{padding-left:16px;padding-right:16px;}
+  .bk-row{flex-wrap:wrap;}
+  .bk-actions{width:100%;justify-content:flex-end;}
+}
+</style>
+
+<!-- HERO -->
+<div class="bk-hero">
+  <div class="bk-hero-bg"></div>
+  <div class="container">
+    <div class="bk-hero-inner" style="padding-bottom:20px;">
+      <h1>Mes réservations</h1>
+      <p>Gérez vos voyages en tant que passager{% if user_role == 'driver' or user_role == 'both' %} et conducteur{% endif %}</p>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="bk-tabs-bar">
+  <div class="container">
+    <div class="bk-tabs">
+      <div class="bk-tab active" onclick="switchTab('passenger',this)">
+        <i class="fas fa-user"></i> Mes voyages
+        {% if passenger_bookings %}<span class="bk-count bk-count-blue">{{ passenger_bookings|length }}</span>{% endif %}
+      </div>
+      {% if user_role == 'driver' or user_role == 'both' %}
+      <div class="bk-tab" onclick="switchTab('driver',this)">
+        <i class="fas fa-car"></i> Demandes reçues
+        {% if driver_requests %}<span class="bk-count bk-count-red">{{ driver_requests|length }}</span>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+  <div class="bk-body">
+
+    <!-- PASSAGER -->
+    <div id="tab-passenger">
+      <div class="bk-sec">
+        <div class="bk-sec-head">
+          <div class="bk-sec-lbl"><i class="fas fa-calendar-check"></i> Voyages réservés</div>
+          {% if passenger_bookings %}<span class="bk-sec-count">{{ passenger_bookings|length }} réservation{{ passenger_bookings|length|pluralize }}</span>{% endif %}
+        </div>
+
+        {% if passenger_bookings %}
+          {% for booking in passenger_bookings %}
+          <div>
+            <div class="bk-row">
+              <div class="bk-av">
+                {% if booking.driver_photo and booking.driver_photo != 'null' %}
+                  <img src="{{ booking.driver_photo }}" alt="{{ booking.driver_name }}">
+                {% else %}
+                  {{ booking.driver_name|slice:":1"|upper|default:"C" }}
+                {% endif %}
+              </div>
+              <div class="bk-info">
+                <div class="bk-name">{{ booking.trip_name|default:booking.trip_id }}</div>
+                <div class="bk-meta">
+                  <span><i class="fas fa-user"></i> {{ booking.driver_name|default:"Conducteur" }}</span>
+                  <span><i class="fas fa-calendar"></i> {{ booking.created_at|date:"d/m/Y H:i" }}</span>
+                  <span><i class="fas fa-chair"></i> {{ booking.seats_booked }} place{{ booking.seats_booked|pluralize }}</span>
+                </div>
+              </div>
+              <div>
+                {% if booking.status == 'pending' %}<span class="bs bs-pending"><i class="fas fa-clock"></i> En attente</span>
+                {% elif booking.status == 'confirmed' %}<span class="bs bs-confirmed"><i class="fas fa-check"></i> Confirmé</span>
+                {% elif booking.status == 'completed' %}<span class="bs bs-completed"><i class="fas fa-flag-checkered"></i> Terminé</span>
+                {% else %}<span class="bs bs-cancelled"><i class="fas fa-times"></i> Annulé</span>
+                {% endif %}
+              </div>
+              <div class="bk-actions">
+                <a href="{% url 'trip_detail' booking.trip_id %}" class="ab ab-outline"><i class="fas fa-eye"></i> Voir</a>
+                {% if booking.status == 'confirmed' %}
+                  <a href="{% url 'complete_trip' booking.id %}" class="ab ab-ok"><i class="fas fa-check"></i> Terminer</a>
+                  <a href="{% url 'report_driver_no_show' booking.id %}" class="ab ab-err">Absent</a>
+                {% endif %}
+                {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+<a href="{% url 'cancel_booking' booking.id %}" class="ab ab-err"></a>                {% endif %}
+              </div>
+            </div>
+            {% if booking.status == 'completed' %}
+            <div class="bk-rating-wrap">
+              <form method="post" action="{% url 'rate_driver' booking.id %}" class="rating-form">
+                {% csrf_token %}
+                <span class="rating-lbl">Notez ce trajet</span>
+                <div class="stars">
+                  <input type="radio" name="rating" value="5" id="s5-{{ booking.id }}" required>
+                  <label for="s5-{{ booking.id }}">★</label>
+                  <input type="radio" name="rating" value="4" id="s4-{{ booking.id }}">
+                  <label for="s4-{{ booking.id }}">★</label>
+                  <input type="radio" name="rating" value="3" id="s3-{{ booking.id }}">
+                  <label for="s3-{{ booking.id }}">★</label>
+                  <input type="radio" name="rating" value="2" id="s2-{{ booking.id }}">
+                  <label for="s2-{{ booking.id }}">★</label>
+                  <input type="radio" name="rating" value="1" id="s1-{{ booking.id }}">
+                  <label for="s1-{{ booking.id }}">★</label>
+                </div>
+                <input type="text" name="comment" placeholder="Partagez votre expérience..." class="rating-input">
+                <button type="submit" class="ab ab-primary"><i class="fas fa-paper-plane"></i> Envoyer</button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="bk-empty">
+            <i class="fas fa-calendar-times"></i>
+            <p>Aucune réservation pour le moment.<br><a href="{% url 'search_trips' %}">Trouver un trajet</a></p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- CONDUCTEUR -->
+    {% if user_role == 'driver' or user_role == 'both' %}
+    <div id="tab-driver" style="display:none;">
+
+      <!-- Demandes en attente -->
+      <div class="bk-sec">
+        <div class="bk-sec-head">
+          <div class="bk-sec-lbl"><i class="fas fa-inbox"></i> Demandes reçues</div>
+          {% if driver_requests %}<span class="bk-sec-count">{{ driver_requests|length }} demande{{ driver_requests|length|pluralize }}</span>{% endif %}
+        </div>
+        {% if driver_requests %}
+          {% for booking in driver_requests %}
+          <div class="bk-row">
+            <div class="bk-av bk-av-amber">{{ booking.passenger_name|slice:":1"|upper|default:"P" }}</div>
+            <div class="bk-info">
+              <div class="bk-name">{{ booking.passenger_name|default:"Passager" }}</div>
+              <div class="bk-meta">
+                <span><i class="fas fa-route"></i> Trajet #{{ booking.trip_id }}</span>
+                <span><i class="fas fa-chair"></i> {{ booking.seats_booked }} place{{ booking.seats_booked|pluralize }}</span>
+                <span><i class="fas fa-credit-card"></i> 
+                    Paiement: 
+                    {% if booking.payment_method == 'cash' %}💵 Espèces
+                    {% elif booking.payment_method == 'cib' %}💳 Carte bancaire
+                    {% elif booking.payment_method == 'ccp' %}🏦 CCP
+                    {% elif booking.payment_method == 'dahabiya' %}💰 Dahabiya
+                    {% else %}{{ booking.payment_method }}{% endif %}
+                </span>
+              </div>
+            </div>
+            <span class="bs bs-pending"><i class="fas fa-clock"></i> En attente</span>
+            <div class="bk-actions">
+              <a href="{% url 'confirm_booking' booking.id %}" class="ab ab-ok"><i class="fas fa-check"></i> Confirmer</a>
+              <a href="{% url 'cancel_booking' booking.id %}" class="ab ab-err" onclick="return confirm('Refuser cette demande ?')"><i class="fas fa-times"></i> Refuser</a>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="bk-empty">
+            <i class="fas fa-inbox"></i>
+            <p>Aucune demande en attente.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Trajets confirmés -->
+      {% if driver_confirmed %}
+      <div class="bk-sec">
+        <div class="bk-sec-head">
+          <div class="bk-sec-lbl"><i class="fas fa-users"></i> Passagers confirmés</div>
+          <span class="bk-sec-count">{{ driver_confirmed|length }} réservation{{ driver_confirmed|length|pluralize }}</span>
+        </div>
+        {% for booking in driver_confirmed %}
+        <div class="bk-row">
+          <div class="bk-av bk-av-green">{{ booking.passenger_name|slice:":1"|upper|default:"P" }}</div>
+          <div class="bk-info">
+            <div class="bk-name">{{ booking.passenger_name|default:"Passager" }}</div>
+            <div class="bk-meta">
+              <span><i class="fas fa-route"></i> Trajet #{{ booking.trip_id }}</span>
+              <span><i class="fas fa-chair"></i> {{ booking.seats_booked }} place{{ booking.seats_booked|pluralize }}</span>
+            </div>
+          </div>
+          <span class="bs bs-confirmed"><i class="fas fa-check"></i> Confirmé</span>
+          <div class="bk-actions">
+            <a href="{% url 'trip_detail' booking.trip_id %}" class="ab ab-outline"><i class="fas fa-eye"></i> Voir</a>
+            <a href="{% url 'complete_trip' booking.id %}?user_type=driver" class="ab ab-ok"><i class="fas fa-flag-checkered"></i> Terminer</a>
+            <a href="{% url 'report_passenger_no_show' booking.id %}" class="ab ab-err">Absent</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+function switchTab(tab,el){
+  document.querySelectorAll('.bk-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  var p=document.getElementById('tab-passenger');
+  var d=document.getElementById('tab-driver');
+  if(p) p.style.display=tab==='passenger'?'block':'none';
+  if(d) d.style.display=tab==='driver'?'block':'none';
+}
+</script>
+{% endblock %}

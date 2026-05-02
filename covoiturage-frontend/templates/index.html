@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+/* INDEX */
+.hero{background:var(--ink);position:relative;overflow:hidden;padding:80px 0 90px;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 65% 100% at 78% 50%,rgba(0,82,255,0.22) 0%,transparent 70%),radial-gradient(ellipse 40% 80% at 10% 80%,rgba(0,82,255,0.08) 0%,transparent 70%);}
+.hero-inner{position:relative;z-index:1;text-align:center;}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,82,255,0.15);border:1px solid rgba(0,82,255,0.3);color:rgba(255,255,255,0.75);font-size:12px;font-weight:600;letter-spacing:0.3px;border-radius:20px;padding:5px 14px;margin-bottom:20px;}
+.hero-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;color:white;letter-spacing:-1.5px;line-height:1.08;margin-bottom:14px;}
+.hero p{font-size:16px;color:rgba(255,255,255,0.55);margin-bottom:36px;}
+.search-bar{background:white;border-radius:100px;max-width:800px;margin:0 auto;display:flex;align-items:center;padding:6px 6px 6px 0;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+.sf{flex:1;display:flex;align-items:center;padding:10px 20px;border-right:1.5px solid var(--border);gap:8px;}
+.sf:last-of-type{border-right:none;}
+.sf i{color:var(--ink4);font-size:13px;flex-shrink:0;}
+.sf input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:transparent;width:100%;font-weight:500;}
+.sf input::placeholder{color:var(--ink4);font-weight:400;}
+.search-go{background:var(--blue);color:white;border:none;border-radius:100px;padding:13px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:8px;transition:background 0.15s;}
+.search-go:hover{background:var(--blue-dk);}
+
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:48px 0;}
+.feat{background:white;border:1px solid var(--border);border-radius:var(--r);padding:28px 22px;text-align:center;transition:all 0.2s;box-shadow:var(--sh);}
+.feat:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:rgba(0,82,255,0.15);}
+.feat-icon{width:52px;height:52px;border-radius:13px;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.feat-icon i{font-size:20px;color:var(--blue);}
+.feat h3{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.feat p{font-size:13px;color:var(--ink3);line-height:1.6;margin:0;}
+
+.trips-section{padding:0 0 48px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.sec-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-0.3px;}
+.sec-link{font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;}
+.sec-link:hover{opacity:0.75;}
+
+.trip-row{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-bottom:10px;display:flex;align-items:center;gap:18px;text-decoration:none;transition:all 0.18s;box-shadow:var(--sh);}
+.trip-row:hover{border-color:var(--blue);box-shadow:var(--sh-md);transform:translateY(-1px);}
+.trip-times{min-width:190px;}
+.trip-dep-arr{display:flex;align-items:center;gap:10px;}
+.trip-t{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--ink);}
+.trip-line-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.trip-line{width:100%;height:2px;background:var(--border);border-radius:2px;position:relative;}
+.trip-line::before,.trip-line::after{content:'';position:absolute;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--blue);}
+.trip-line::before{left:0;}.trip-line::after{right:0;}
+.trip-dur{font-size:10px;color:var(--ink4);font-weight:500;}
+.trip-cities-row{display:flex;justify-content:space-between;margin-top:3px;}
+.trip-city{font-size:11px;color:var(--ink4);font-weight:600;}
+.trip-main{flex:1;}
+.trip-name{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.trip-date{font-size:12px;color:var(--ink4);}
+.trip-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.trip-tag{font-size:11px;color:var(--ink3);background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 10px;}
+.trip-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:140px;flex-shrink:0;}
+.trip-driv{display:flex;align-items:center;gap:8px;}
+.driv-av{width:30px;height:30px;border-radius:50%;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--blue);overflow:hidden;flex-shrink:0;}
+.driv-av img{width:100%;height:100%;object-fit:cover;}
+.driv-name{font-size:12px;font-weight:600;color:var(--ink);}
+.driv-rating{font-size:11px;color:var(--ink4);}
+.trip-price{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--blue);letter-spacing:-0.3px;}
+.trip-price-sub{font-size:11px;color:var(--ink4);}
+.trip-btn{background:var(--blue);color:white;border:none;border-radius:20px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s;}
+.trip-btn:hover{background:var(--blue-dk);}
+
+.stats-band{background:var(--ink);padding:52px 0;}
+.stats-inner{display:flex;justify-content:center;gap:0;}
+.stat-it{flex:1;text-align:center;padding:0 32px;border-right:1px solid rgba(255,255,255,0.08);}
+.stat-it:last-child{border-right:none;}
+.stat-n{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:white;letter-spacing:-1px;}
+.stat-l{font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px;}
+
+.cta-band{background:var(--bg2);padding:56px 0;}
+.cta-inner{background:var(--ink);border-radius:20px;padding:52px 40px;max-width:680px;margin:0 auto;text-align:center;position:relative;overflow:hidden;}
+.cta-inner::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(0,82,255,0.3) 0%,transparent 70%);}
+.cta-inner h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:white;letter-spacing:-0.5px;margin-bottom:10px;position:relative;}
+.cta-inner p{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:28px;position:relative;}
+.cta-btn{background:var(--blue);color:white;border:none;border-radius:100px;padding:13px 32px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-block;box-shadow:0 4px 20px rgba(0,82,255,0.4);position:relative;}
+.cta-btn:hover{background:var(--blue-dk);color:white;transform:translateY(-2px);}
+
+.empty-state{text-align:center;padding:52px;background:white;border-radius:var(--r);border:1.5px dashed var(--border);}
+.empty-state i{font-size:40px;color:var(--ink4);margin-bottom:14px;display:block;}
+.empty-state p{color:var(--ink4);font-size:14px;margin:0;}
+
+@media(max-width:768px){
+  .search-bar{flex-direction:column;border-radius:16px;padding:12px;}
+  .sf{border-right:none;border-bottom:1.5px solid var(--border);padding:10px 14px;}
+  .sf:last-of-type{border-bottom:none;}
+  .search-go{width:100%;margin-left:0;border-radius:10px;}
+  .feat-grid{grid-template-columns:1fr 1fr;}
+  .trip-row{flex-wrap:wrap;}
+  .stats-inner{flex-wrap:wrap;}
+  .stat-it{border-right:none;min-width:45%;margin-bottom:20px;}
+}
+</style>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-inner">
+    <div class="hero-tag">
+      <span class="hero-tag-dot"></span>
+      Covoiturage en Algérie
+    </div>
+    <h1>Voyagez mieux,<br>voyagez ensemble</h1>
+    <p>Rejoignez la plus grande communauté de covoiturage en Algérie</p>
+    <form method="get" action="{% url 'search_trips' %}" class="search-bar">
+      <div class="sf">
+        <i class="fas fa-map-marker-alt"></i>
+        <input type="text" name="departure" placeholder="Ville de départ" value="{{ request.GET.departure }}">
+      </div>
+      <div class="sf">
+        <i class="fas fa-flag-checkered"></i>
+        <input type="text" name="destination" placeholder="Destination" value="{{ request.GET.destination }}">
+      </div>
+      <div class="sf">
+        <i class="fas fa-calendar"></i>
+        <input type="date" name="date" value="{{ request.GET.date }}">
+      </div>
+      <button type="submit" class="search-go">Rechercher</button>
+    </form>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div class="container">
+  <div class="feat-grid">
+    <div class="feat">
+      <div class="feat-icon"><i class="fas fa-coins"></i></div>
+      <h3>Économique</h3>
+      <p>Économisez jusqu'à 70% sur vos trajets en partageant les frais de route.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><i class="fas fa-leaf"></i></div>
+      <h3>Écologique</h3>
+      <p>Réduisez votre empreinte carbone en partageant votre véhicule.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><i class="fas fa-users"></i></div>
+      <h3>Communauté</h3>
+      <p>Profils vérifiés, avis authentiques, voyagez en confiance.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon"><i class="fas fa-shield-alt"></i></div>
+      <h3>Sécurisé</h3>
+      <p>Paiement sécurisé et assistance disponible à tout moment.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TRIPS -->
+{% if recent_trips %}
+<div class="container trips-section">
+  <div class="sec-head">
+    <div class="sec-title">Trajets disponibles</div>
+    <a href="{% url 'search_trips' %}" class="sec-link">Voir tout</a>
+  </div>
+  {% for trip in recent_trips %}
+  <a class="trip-row" href="{% url 'trip_detail' trip.id %}">
+    <div class="trip-times">
+      <div class="trip-dep-arr">
+        <div class="trip-t">{{ trip.departure_datetime|date:"H:i" }}</div>
+        <div class="trip-line-wrap">
+          <div class="trip-line"></div>
+          <div class="trip-dur">{{ trip.duration|default:"—" }}</div>
+        </div>
+        <div class="trip-t">{{ trip.arrival_time|default:"—" }}</div>
+      </div>
+      <div class="trip-cities-row">
+        <div class="trip-city">{{ trip.departure_city_name }}</div>
+        <div class="trip-city">{{ trip.arrival_city_name }}</div>
+      </div>
+    </div>
+    <div class="trip-main">
+      <div class="trip-name">{{ trip.departure_city_name }} — {{ trip.arrival_city_name }}</div>
+      <div class="trip-date">{{ trip.departure_datetime|date:"d F Y" }}</div>
+      <div class="trip-tags">
+        <span class="trip-tag">{{ trip.available_seats }} place{{ trip.available_seats|pluralize }}</span>
+        {% if trip.driver_verified %}<span class="trip-tag">Profil vérifié</span>{% endif %}
+      </div>
+    </div>
+    <div class="trip-right">
+      <div class="trip-driv">
+        <div class="driv-av">
+          {% if trip.driver_photo and trip.driver_photo != 'null' %}
+            <img src="{{ trip.driver_photo }}" alt="">
+          {% else %}
+            {{ trip.driver_name|slice:":1"|upper|default:"C" }}
+          {% endif %}
+        </div>
+        <div>
+          <div class="driv-name">{{ trip.driver_name|default:"—" }}</div>
+          <div class="driv-rating">{% if trip.driver_avg_rating %}{{ trip.driver_avg_rating }} / 5{% else %}Nouveau{% endif %}</div>
+        </div>
+      </div>
+      <div>
+        <div class="trip-price">{{ trip.price_per_seat }} DA</div>
+        <div class="trip-price-sub">par personne</div>
+      </div>
+      <button class="trip-btn">Réserver</button>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="container">
+    <div class="stats-inner">
+      <div class="stat-it"><div class="stat-n">12 400+</div><div class="stat-l">Voyageurs actifs</div></div>
+      <div class="stat-it"><div class="stat-n">3 200+</div><div class="stat-l">Trajets publiés</div></div>
+      <div class="stat-it"><div class="stat-n">58</div><div class="stat-l">Wilayas couvertes</div></div>
+      <div class="stat-it"><div class="stat-n">4.8 / 5</div><div class="stat-l">Note moyenne</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+{% if not request.session.access_token %}
+<div class="cta-band">
+  <div class="container">
+    <div class="cta-inner">
+      <h2>Prêt à voyager autrement ?</h2>
+      <p>Inscrivez-vous gratuitement et rejoignez des milliers de voyageurs algériens.</p>
+      <a href="{% url 'register' %}" class="cta-btn">Créer un compte gratuit</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

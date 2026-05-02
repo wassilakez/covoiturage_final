@@ -1,0 +1,44 @@
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+  payment-service:
+    build: .
+    container_name: payment-service
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - BOOKING_SERVICE_URL=${BOOKING_SERVICE_URL}
+      - TRIP_SERVICE_URL=${TRIP_SERVICE_URL}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - receipt_volume:/app/receipts
+      - log_volume:/app/logs
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.payment.rule=Host(`payment.localhost`) || PathPrefix(`/api/payments`)"
+      - "traefik.http.services.payment.loadbalancer.server.port=8000"
+      - "traefik.http.routers.payment.entrypoints=web"
+    
+    networks:
+      - wams-network
+
+volumes:
+  receipt_volume:
+  log_volume:
+
+networks:
+  wams-network:
+    external: true

@@ -1,0 +1,794 @@
+{% extends 'base.html' %}
+{% block content %}
+{{ chart_data|json_script:"chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+<style>
+body{padding-top:0!important;}
+nav.navbar{display:none!important;}
+
+:root{
+  --sb:240px;
+  --adm-ink:#0A1628;
+  --adm-border:rgba(255,255,255,0.07);
+  --adm-active:rgba(0,82,255,0.2);
+}
+.adm{display:flex;min-height:100vh;background:#F0F4FF;}
+
+/* SIDEBAR */
+.sb{width:var(--sb);flex-shrink:0;background:var(--adm-ink);border-right:1px solid var(--adm-border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow:hidden;}
+.sb-logo{padding:22px 20px;border-bottom:1px solid var(--adm-border);display:flex;align-items:center;gap:10px;}
+.sb-logo-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:white;letter-spacing:-0.3px;}
+.sb-logo-text span{color:var(--blue);}
+.sb-badge{font-size:9px;font-weight:700;background:rgba(0,82,255,0.2);border:1px solid rgba(0,82,255,0.3);color:rgba(255,255,255,0.6);border-radius:4px;padding:2px 6px;margin-top:1px;display:block;}
+.sb-nav{flex:1;overflow-y:auto;padding:16px 12px;}
+.sb-sec{font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.2px;padding:10px 10px 6px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.45);font-size:13px;font-weight:500;transition:all 0.15s;margin-bottom:2px;position:relative;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.8);}
+.sb-item.active{background:var(--adm-active);color:white;}
+.sb-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--blue);border-radius:0 3px 3px 0;}
+.sb-item i{width:16px;font-size:14px;flex-shrink:0;opacity:0.8;}
+.sb-item.active i{opacity:1;}
+.sb-badge2{margin-left:auto;background:var(--blue);color:white;font-size:9px;font-weight:700;border-radius:10px;padding:1px 6px;}
+.sb-badge2.red{background:var(--err);}
+/* Footer sidebar — FIX: hauteur fixe, pas de flex:1 */
+.sb-foot{padding:14px 12px;border-top:1px solid var(--adm-border);flex-shrink:0; background:var(--adm-ink);  position:relative; z-index:10;}
+.sb-profile{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;}
+.sb-profile:hover{background:rgba(255,255,255,0.05);}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;}
+.sb-pname{font-size:13px;font-weight:600;color:white;}
+.sb-prole{font-size:10px;color:rgba(255,255,255,0.3);}
+
+/* MAIN */
+.adm-main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+/* TOPBAR — FIX: on retire la search box dupliquée, on garde juste le titre + actions */
+.adm-topbar{height:58px;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:40;box-shadow:0 1px 8px rgba(0,30,100,0.05);}
+.adm-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--ink);}
+.adm-topbar-right{display:flex;align-items:center;gap:10px;}
+
+.adm-content{padding:24px 28px;flex:1;}
+.page-view{display:none;}.page-view.active{display:block;}
+
+/* STAT CARDS */
+.st-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.st-card{background:white;border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh);transition:all 0.2s;position:relative;overflow:hidden;}
+.st-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px);}
+.st-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.st-icon i{font-size:16px;}
+.st-card.blue .st-icon{background:var(--blue-lt);}
+.st-card.blue .st-icon i{color:var(--blue);}
+.st-card.green .st-icon{background:var(--ok-bg);}
+.st-card.green .st-icon i{color:var(--ok);}
+.st-card.amber .st-icon{background:var(--warn-bg);}
+.st-card.amber .st-icon i{color:var(--warn);}
+.st-card.red .st-icon{background:var(--err-bg);}
+.st-card.red .st-icon i{color:var(--err);}
+.st-lbl{font-size:11px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;}
+.st-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-0.5px;line-height:1;}
+.st-sub{font-size:11px;color:var(--ink4);margin-top:5px;}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+.g3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px;}
+
+/* CARDS */
+.ac{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.ac-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg);}
+.ac-lbl{font-size:11px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:7px;}
+.ac-lbl i{color:var(--blue);}
+.ac-action{font-size:12px;color:var(--blue);cursor:pointer;font-weight:600;}
+.ac-b{padding:18px;}
+
+/* BAR CHART */
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.bbar{width:100%;height:100%;background:var(--bg2);border-radius:5px 5px 0 0;position:relative;overflow:hidden;}
+.bfill{position:absolute;bottom:0;left:0;width:100%;background:var(--blue);border-radius:5px 5px 0 0;transition:height 0.6s cubic-bezier(.22,.68,0,1.2);}
+.bfill.dim{background:rgba(0,82,255,0.25);}
+.blbl{font-size:10px;color:var(--ink4);}
+
+/* ACTIVITY FEED */
+.feed-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.feed-item:last-child{border-bottom:none;}
+.feed-dot-wrap{display:flex;flex-direction:column;align-items:center;padding-top:3px;}
+.fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.fline{width:1.5px;flex:1;background:var(--border);margin-top:4px;}
+.feed-item:last-child .fline{display:none;}
+.feed-txt{font-size:13px;color:var(--ink3);line-height:1.5;}
+.feed-txt strong{color:var(--ink);font-weight:600;}
+.feed-time{font-size:11px;color:var(--ink4);margin-top:2px;}
+
+/* TABLES */
+.adm-tbl-wrap{overflow-x:auto;}
+.adm-tbl{width:100%;border-collapse:collapse;}
+.adm-tbl thead th{font-size:11px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:0.6px;padding:10px 14px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg);}
+.adm-tbl tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+.adm-tbl tbody tr:last-child{border-bottom:none;}
+.adm-tbl tbody tr:hover td{background:var(--bg);}
+.adm-tbl tbody td{padding:11px 14px;font-size:13px;color:var(--ink3);vertical-align:middle;}
+.adm-tbl tbody td:first-child{color:var(--ink);font-weight:500;}
+.adm-tbl .mono{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink4);}
+
+/* FILTER BAR — une seule, intégrée dans chaque page */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-search{display:flex;align-items:center;gap:7px;background:white;border:1.5px solid var(--border);border-radius:var(--rsm);padding:8px 13px;transition:border-color 0.15s;}
+.filter-search:focus-within{border-color:var(--blue);}
+.filter-search i{color:var(--ink4);font-size:13px;}
+.filter-search input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:transparent;width:220px;}
+.filter-search input::placeholder{color:var(--ink4);}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.donut-legend{display:flex;flex-direction:column;gap:9px;}
+.dl-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);}
+.dl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* SETTINGS PAGE */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.settings-section{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.settings-section h3{font-size:13px;font-weight:700;color:var(--ink);padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);margin:0;display:flex;align-items:center;gap:8px;}
+.settings-section h3 i{color:var(--blue);}
+.settings-body{padding:20px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row label{font-size:13px;color:var(--ink3);font-weight:500;}
+.settings-row .settings-val{font-size:13px;color:var(--ink4);}
+.settings-info{font-size:12px;color:var(--ink4);margin-top:4px;}
+.toggle{position:relative;display:inline-block;width:40px;height:22px;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#CBD5E1;border-radius:22px;transition:.3s;}
+.toggle-slider:before{position:absolute;content:"";height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+.toggle input:checked + .toggle-slider{background:var(--blue);}
+.toggle input:checked + .toggle-slider:before{transform:translateX(18px);}
+.btn-settings{background:var(--blue);color:white;border:none;border-radius:var(--rsm);padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s;}
+.btn-settings:hover{background:#0040CC;}
+.btn-settings.danger{background:var(--err);}
+
+/* Boutons actions */
+.btn-cv{background:var(--blue);color:white;border:none;border-radius:var(--rsm);padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.15s;}
+.btn-cv:hover{background:#0040CC;}
+.btn-cv-sm{padding:4px 10px;font-size:11px;}
+.btn-cv-warn{background:white;color:#D97706;border:1.5px solid #FDE68A;}
+.btn-cv-warn:hover{background:var(--warn-bg);}
+.btn-cv-err{background:white;color:var(--err);border:1.5px solid #FECACA;}
+.btn-cv-err:hover{background:var(--err-bg);}
+</style>
+
+<div class="adm">
+  <!-- SIDEBAR -->
+  <aside class="sb">
+    <div class="sb-logo">
+      <div>
+        <div class="sb-logo-text">Cara<span>van</span></div>
+        <span class="sb-badge">Admin Panel</span>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-sec">Principal</div>
+      <div class="sb-item active" data-page="dashboard"><i class="fas fa-th-large"></i> Tableau de bord</div>
+      <div class="sb-item" data-page="trajets"><i class="fas fa-route"></i> Trajets <span class="sb-badge2" id="badgeTrips">0</span></div>
+      <div class="sb-item" data-page="utilisateurs"><i class="fas fa-users"></i> Utilisateurs <span class="sb-badge2" id="badgeUsers">0</span></div>
+      <div class="sb-item" data-page="reservations"><i class="fas fa-calendar-check"></i> Réservations <span class="sb-badge2 red" id="badgeBookings">0</span></div>
+      <div class="sb-sec" style="margin-top:10px;">Analyse</div>
+      <div class="sb-item" data-page="statistiques"><i class="fas fa-chart-bar"></i> Statistiques</div>
+      <div class="sb-sec" style="margin-top:10px;">Système</div>
+      <div class="sb-item" data-page="parametres"><i class="fas fa-cog"></i> Paramètres</div>
+      <div class="sb-item"><a href="{% url 'home' %}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;width:100%;"><i class="fas fa-external-link-alt"></i> Voir le site</a></div>
+    </nav>
+    <div class="sb-foot">
+      <div class="sb-profile">
+        <div class="sb-av">A</div>
+        <div>
+          <div class="sb-pname">Administrateur</div>
+          <div class="sb-prole">Super admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="adm-main">
+    <!-- TOPBAR : plus de search dupliquée ici — chaque page a sa propre barre -->
+    <div class="adm-topbar">
+      <div class="adm-title" id="page-title">Tableau de bord</div>
+      <div class="adm-topbar-right">
+        <span style="font-size:12px;color:var(--ink4);">Caravane Admin</span>
+      </div>
+    </div>
+
+    <div class="adm-content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div id="dashboard" class="page-view active">
+        <div class="st-grid">
+          <div class="st-card blue"><div class="st-icon"><i class="fas fa-route"></i></div><div class="st-lbl">Trajets actifs</div><div class="st-val" id="statTrips">0</div><div class="st-sub">Total trajets</div></div>
+          <div class="st-card green"><div class="st-icon"><i class="fas fa-users"></i></div><div class="st-lbl">Utilisateurs</div><div class="st-val" id="statUsers">0</div><div class="st-sub">Inscrits</div></div>
+          <div class="st-card amber"><div class="st-icon"><i class="fas fa-calendar-check"></i></div><div class="st-lbl">Réservations</div><div class="st-val" id="statBookings">0</div><div class="st-sub">Total</div></div>
+          <div class="st-card red"><div class="st-icon"><i class="fas fa-car"></i></div><div class="st-lbl">Conducteurs</div><div class="st-val" id="statDrivers">0</div><div class="st-sub">Inscrits</div></div>
+        </div>
+        <div class="g3">
+          <div class="ac">
+            <div class="ac-h"><div class="ac-lbl"><i class="fas fa-chart-bar"></i> Trajets — 7 derniers jours</div></div>
+            <div class="ac-b"><div class="bar-chart" id="weeklyChart"></div></div>
+          </div>
+          <div class="ac">
+            <div class="ac-h"><div class="ac-lbl"><i class="fas fa-bolt"></i> Activité récente</div></div>
+            <div class="ac-b" style="padding:12px 18px;" id="activityFeed">
+              <div style="text-align:center;padding:20px;color:var(--ink4);font-size:13px;">Chargement...</div>
+            </div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="ac">
+            <div class="ac-h"><div class="ac-lbl"><i class="fas fa-chart-pie"></i> Répartition des trajets</div></div>
+            <div class="ac-b">
+              <div class="donut-wrap">
+                <canvas id="donutChart" width="140" height="140"></canvas>
+                <div class="donut-legend" id="donutLegend"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ac">
+            <div class="ac-h">
+              <div class="ac-lbl"><i class="fas fa-route"></i> Derniers trajets</div>
+              <span class="ac-action" onclick="showPage('trajets')">Voir tout</span>
+            </div>
+            <div class="adm-tbl-wrap">
+              <table class="adm-tbl">
+                <thead><tr><th>Trajet</th><th>Conducteur</th><th>Prix</th><th>Date</th></tr></thead>
+                <tbody id="recentTrips"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink4);">Chargement...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TRAJETS ══ -->
+      <div id="trajets" class="page-view">
+        <div class="filter-bar">
+          <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="tripSearch" placeholder="Rechercher un trajet...">
+          </div>
+        </div>
+        <div class="ac">
+          <div class="ac-h"><div class="ac-lbl"><i class="fas fa-route"></i> Liste des trajets</div></div>
+          <div class="adm-tbl-wrap">
+            <table class="adm-tbl">
+              <thead><tr><th>#</th><th>Trajet</th><th>Conducteur</th><th>Prix</th><th>Places</th><th>Date</th><th>Statut</th></tr></thead>
+              <tbody id="tripsTable"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink4);">Chargement...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ UTILISATEURS ══ -->
+      <div id="utilisateurs" class="page-view">
+        <div class="filter-bar">
+          <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="userSearch" placeholder="Rechercher un utilisateur...">
+          </div>
+        </div>
+        <div class="ac">
+          <div class="ac-h"><div class="ac-lbl"><i class="fas fa-users"></i> Liste des utilisateurs</div></div>
+          <div class="adm-tbl-wrap">
+            <table class="adm-tbl">
+              <thead><tr><th>#</th><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr></thead>
+              <tbody id="usersTable"><tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink4);">Chargement...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ RÉSERVATIONS ══ -->
+      <div id="reservations" class="page-view">
+        <div class="st-grid">
+          <div class="st-card green"><div class="st-icon"><i class="fas fa-check-circle"></i></div><div class="st-lbl">Total</div><div class="st-val" id="resTotal">0</div></div>
+          <div class="st-card blue"><div class="st-icon"><i class="fas fa-check"></i></div><div class="st-lbl">Confirmées</div><div class="st-val" id="resConfirmed">0</div></div>
+          <div class="st-card amber"><div class="st-icon"><i class="fas fa-clock"></i></div><div class="st-lbl">En attente</div><div class="st-val" id="resPending">0</div></div>
+          <div class="st-card red"><div class="st-icon"><i class="fas fa-times-circle"></i></div><div class="st-lbl">Annulées</div><div class="st-val" id="resCancelled">0</div></div>
+        </div>
+        <div class="filter-bar">
+          <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="bookingSearch" placeholder="Rechercher une réservation...">
+          </div>
+        </div>
+        <div class="ac">
+          <div class="ac-h"><div class="ac-lbl"><i class="fas fa-calendar-check"></i> Toutes les réservations</div></div>
+          <div class="adm-tbl-wrap">
+            <table class="adm-tbl">
+              <!-- FIX: 6 colonnes cohérentes avec le tbody -->
+              <thead><tr><th>#</th><th>Passager</th><th>Conducteur</th><th>Montant</th><th>Statut</th><th>Actions</th></tr></thead>
+              <tbody id="bookingsTable"><tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink4);">Chargement...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ STATISTIQUES ══ -->
+      <div id="statistiques" class="page-view">
+        <div class="st-grid">
+          <div class="st-card blue"><div class="st-icon"><i class="fas fa-percent"></i></div><div class="st-lbl">Taux d'occupation</div><div class="st-val" id="statOccupancy">—</div></div>
+          <div class="st-card green"><div class="st-icon"><i class="fas fa-star"></i></div><div class="st-lbl">Note moyenne</div><div class="st-val" id="statRating">—</div></div>
+          <div class="st-card amber"><div class="st-icon"><i class="fas fa-ban"></i></div><div class="st-lbl">Taux d'annulation</div><div class="st-val" id="statCancel">—</div></div>
+          <div class="st-card red"><div class="st-icon"><i class="fas fa-user-plus"></i></div><div class="st-lbl">Total utilisateurs</div><div class="st-val" id="statNew">0</div></div>
+        </div>
+        <div class="g2">
+          <div class="ac">
+            <div class="ac-h"><div class="ac-lbl"><i class="fas fa-map-marker-alt"></i> Trajets par wilaya</div></div>
+            <div class="ac-b"><canvas id="citiesChart" height="200"></canvas></div>
+          </div>
+          <div class="ac">
+            <div class="ac-h"><div class="ac-lbl"><i class="fas fa-user-plus"></i> Utilisateurs inscrits</div></div>
+            <div class="ac-b">
+              <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--blue);letter-spacing:-1px;" id="newUsersCount">0</div>
+              <div style="font-size:12px;color:var(--ink4);margin-top:4px;margin-bottom:18px;">utilisateurs au total</div>
+              <div style="display:flex;align-items:flex-end;gap:4px;height:50px;" id="sparkline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PARAMÈTRES ══ -->
+      <div id="parametres" class="page-view">
+        <div class="settings-grid">
+          <div class="settings-section">
+            <h3><i class="fas fa-globe"></i> Configuration générale</h3>
+            <div class="settings-body">
+              <div class="settings-row">
+                <div><label>Nom de la plateforme</label><div class="settings-info">Affiché dans l'interface</div></div>
+                <span class="settings-val">Caravane</span>
+              </div>
+              <div class="settings-row">
+                <div><label>Environnement</label></div>
+                <span class="settings-val" style="color:var(--ok);font-weight:600;">Production</span>
+              </div>
+              <div class="settings-row">
+                <div><label>Commission par défaut</label><div class="settings-info">% prélevé sur chaque trajet</div></div>
+                <span class="settings-val">0 %</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3><i class="fas fa-shield-alt"></i> Sécurité</h3>
+            <div class="settings-body">
+              <div class="settings-row">
+                <div><label>Vérification des conducteurs</label><div class="settings-info">Activation manuelle des comptes</div></div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><label>2FA obligatoire (admins)</label></div>
+                <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><label>Blocage auto après signalements</label><div class="settings-info">Seuil : 3 signalements</div></div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3><i class="fas fa-credit-card"></i> Paiements</h3>
+            <div class="settings-body">
+              <div class="settings-row">
+                <div><label>Paiement en espèces</label></div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><label>Paiement en ligne (CB/CIB)</label></div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><label>Délai de remboursement</label><div class="settings-info">Jours ouvrables</div></div>
+                <span class="settings-val">3 jours</span>
+              </div>
+              <div class="settings-row">
+                <div><label>Remboursement annulation tardive</label><div class="settings-info">Passager annule &lt; 2h avant</div></div>
+                <span class="settings-val">50 %</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3><i class="fas fa-bell"></i> Notifications</h3>
+            <div class="settings-body">
+              <div class="settings-row">
+                <div><label>Notifications RabbitMQ</label></div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><label>Email de confirmation</label></div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="settings-row">
+                <div><label>Alertes en temps réel</label></div>
+                <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:10px;">
+          <button class="btn-settings" onclick="alert('Paramètres sauvegardés (interface de démonstration)')">
+            <i class="fas fa-save"></i> Sauvegarder
+          </button>
+          <button class="btn-settings danger" onclick="if(confirm('Réinitialiser tous les paramètres ?'))alert('Réinitialisé.')">
+            <i class="fas fa-undo"></i> Réinitialiser
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /adm-content -->
+  </div><!-- /adm-main -->
+</div><!-- /adm -->
+
+<script>
+var raw = document.getElementById('chart-data');
+var data = raw ? JSON.parse(raw.textContent) : {};
+var allTrips    = data.allTrips    || [];
+var allUsers    = data.allUsers    || [];
+var allBookings = data.allBookings || [];
+var driversList = data.driversList || [];
+
+function fmt(d){
+  try{ return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}); }
+  catch(e){ return d||'—'; }
+}
+function badge(s){
+  var map = {
+    confirmed: "<span class='badge-ok'><span class='bdot'></span>Confirmée</span>",
+    pending:   "<span class='badge-warn'><span class='bdot'></span>En attente</span>",
+    cancelled: "<span class='badge-err'><span class='bdot'></span>Annulée</span>",
+    refunded:  "<span class='badge-warn'><span class='bdot'></span>Remboursée</span>"
+  };
+  return map[s] || ("<span class='badge-muted'>" + (s||'—') + "</span>");
+}
+function statusBadge(u){
+  return u.is_active !== false
+    ? "<span class='badge-ok'><span class='bdot'></span>Actif</span>"
+    : "<span class='badge-err'><span class='bdot'></span>Bloqué</span>";
+}
+
+/* ── Stats globales ── */
+document.getElementById('statTrips').textContent    = allTrips.length;
+document.getElementById('statUsers').textContent    = allUsers.length;
+document.getElementById('statBookings').textContent = allBookings.length;
+document.getElementById('statDrivers').textContent  = driversList.length;
+document.getElementById('badgeTrips').textContent   = allTrips.length;
+document.getElementById('badgeUsers').textContent   = allUsers.length;
+document.getElementById('badgeBookings').textContent= allBookings.length;
+
+/* ── Réservation stats ── */
+var conf=0,pend=0,canc=0;
+allBookings.forEach(function(b){
+  if(b.status==='confirmed') conf++;
+  else if(b.status==='pending') pend++;
+  else if(b.status==='cancelled') canc++;
+});
+document.getElementById('resTotal').textContent     = allBookings.length;
+document.getElementById('resConfirmed').textContent = conf;
+document.getElementById('resPending').textContent   = pend;
+document.getElementById('resCancelled').textContent = canc;
+
+/* ── Page statistiques ── */
+if(allTrips.length){
+  var ts=0,ta=0,ca=0;
+  allTrips.forEach(function(t){
+    ts+=(t.total_seats||0);
+    ta+=(t.total_seats||0)-(t.available_seats||0);
+    if(t.status==='cancelled') ca++;
+  });
+  document.getElementById('statOccupancy').textContent = ts ? Math.round(ta/ts*100)+'%' : '0%';
+  document.getElementById('statCancel').textContent    = allTrips.length ? (ca/allTrips.length*100).toFixed(1)+'%' : '0%';
+  document.getElementById('statRating').textContent    = '—';
+  document.getElementById('statNew').textContent       = allUsers.length;
+  document.getElementById('newUsersCount').textContent = allUsers.length;
+}
+
+/* ── Graphique hebdomadaire ── */
+(function(){
+  var labels = data.tripLabels || ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  var values = data.tripData   || [0,0,0,0,0,0,0];
+  var mx = Math.max.apply(null,values) || 1;
+  var wrap = document.getElementById('weeklyChart');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  labels.forEach(function(l,i){
+    var h = Math.round(values[i]/mx*100);
+    var col = document.createElement('div');
+    col.className='bc';
+    col.innerHTML='<div class="bbar"><div class="bfill" style="height:'+h+'%"></div></div><div class="blbl">'+l+'</div>';
+    wrap.appendChild(col);
+  });
+})();
+
+/* ── Activité récente ── */
+(function(){
+  var feed = document.getElementById('activityFeed');
+  if(!feed) return;
+  var events=[];
+  allTrips.slice(-3).forEach(function(t){
+    events.push({
+      color:'var(--ok)',
+      text:'<strong>'+(t.driver_name||'Conducteur')+'</strong> a publié '+(t.departure_city_name||'?')+' → '+(t.arrival_city_name||'?'),
+      time:'récemment'
+    });
+  });
+  allBookings.slice(-2).forEach(function(b){
+    events.push({
+      color:'var(--blue)',
+      text:'<strong>'+(b.passenger_name||'Passager')+'</strong> a réservé une place',
+      time:'récemment'
+    });
+  });
+  if(!events.length){
+    feed.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink4);font-size:13px;">Aucune activité</div>';
+    return;
+  }
+  feed.innerHTML=events.map(function(e){
+    return '<div class="feed-item"><div class="feed-dot-wrap"><div class="fdot" style="background:'+e.color+'"></div><div class="fline"></div></div><div><div class="feed-txt">'+e.text+'</div><div class="feed-time">'+e.time+'</div></div></div>';
+  }).join('');
+})();
+
+/* ── Donut ── */
+(function(){
+  var canvas=document.getElementById('donutChart'); if(!canvas) return;
+  var north=['alger','blida','tipaza','tizi ouzou','boumerdes'];
+  var east=['constantine','annaba','setif','bejaia','jijel'];
+  var west=['oran','tlemcen','sidi bel abbes','mostaganem'];
+  var cnt={Nord:0,Est:0,Ouest:0,Sud:0};
+  allTrips.forEach(function(t){
+    var c=(t.departure_city_name||'').toLowerCase();
+    if(north.some(function(x){return c.includes(x);})) cnt['Nord']++;
+    else if(east.some(function(x){return c.includes(x);})) cnt['Est']++;
+    else if(west.some(function(x){return c.includes(x);})) cnt['Ouest']++;
+    else cnt['Sud']++;
+  });
+  var colors=['#0052FF','#00B37D','#D97706','#8FA5BF'];
+  var labels=Object.keys(cnt); var values=Object.values(cnt);
+  var total=values.reduce(function(a,b){return a+b;},0)||1;
+  new Chart(canvas,{type:'doughnut',data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},options:{cutout:'68%',plugins:{legend:{display:false}}}});
+  var leg=document.getElementById('donutLegend');
+  if(leg) leg.innerHTML=labels.map(function(l,i){return '<div class="dl-item"><div class="dl-dot" style="background:'+colors[i]+'"></div>'+l+' — '+Math.round(values[i]/total*100)+'%</div>';}).join('');
+})();
+
+/* ── Graphique villes ── */
+(function(){
+  var canvas=document.getElementById('citiesChart'); if(!canvas) return;
+  var labels=data.cityLabels||[];
+  var vals  =data.cityData  ||[];
+  if(!labels.length){
+    var cc={};
+    allTrips.forEach(function(t){var c=t.departure_city_name;if(c&&c!=='Inconnue')cc[c]=(cc[c]||0)+1;});
+    var sorted=Object.entries(cc).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
+    labels=sorted.map(function(x){return x[0];});
+    vals  =sorted.map(function(x){return x[1];});
+  }
+  new Chart(canvas,{type:'bar',data:{labels:labels,datasets:[{label:'Trajets',data:vals,backgroundColor:'#0052FF',borderRadius:6,hoverBackgroundColor:'#0040CC'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,30,100,0.05)'},ticks:{color:'#8FA5BF',font:{size:11}}},x:{grid:{display:false},ticks:{color:'#8FA5BF',font:{size:11}}}}}});
+})();
+
+/* ── Sparkline ── */
+(function(){
+  var sp=document.getElementById('sparkline'); if(!sp) return;
+  var vals=(data.tripData||[8,12,10,16,14,18,15,20,22,25]).slice(0,10);
+  var mx=Math.max.apply(null,vals)||1;
+  vals.forEach(function(v){var d=document.createElement('div');d.style.cssText='flex:1;background:rgba(0,82,255,0.2);border-radius:3px 3px 0 0;min-height:4px;height:'+Math.round(v/mx*100)+'%';sp.appendChild(d);});
+})();
+
+/* ── Derniers trajets (dashboard) ── */
+(function(){
+  var tb=document.getElementById('recentTrips'); if(!tb) return;
+  if(!allTrips.length){tb.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink4);">Aucun trajet</td></tr>';return;}
+  tb.innerHTML=allTrips.slice(-5).reverse().map(function(t){
+    return '<tr><td>'+(t.departure_city_name||'?')+' — '+(t.arrival_city_name||'?')+'</td><td>'+(t.driver_name||'—')+'</td><td style="color:var(--blue);font-weight:700;">'+(t.price_per_seat||0)+' DA</td><td class="mono">'+fmt(t.departure_datetime)+'</td></tr>';
+  }).join('');
+})();
+
+/* ── Table trajets ── */
+(function(){
+  var tb=document.getElementById('tripsTable'); if(!tb) return;
+  if(!allTrips.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink4);">Aucun trajet</td></tr>';return;}
+  tb.innerHTML=allTrips.map(function(t){
+    var stBadge=t.status==='cancelled'
+      ? "<span class='badge-err'><span class='bdot'></span>Annulé</span>"
+      : t.available_seats===0
+        ? "<span class='badge-warn'><span class='bdot'></span>Complet</span>"
+        : "<span class='badge-ok'><span class='bdot'></span>Actif</span>";
+    return '<tr>'
+      +'<td class="mono">#'+t.id+'</td>'
+      +'<td>'+(t.departure_city_name||'?')+' → '+(t.arrival_city_name||'?')+'</td>'
+      +'<td>'+(t.driver_name||'—')+'</td>'
+      +'<td style="color:var(--blue);font-weight:700;">'+(t.price_per_seat||0)+' DA</td>'
+      +'<td>'+((t.total_seats||0)-(t.available_seats||0))+'/'+(t.total_seats||0)+'</td>'
+      +'<td class="mono">'+fmt(t.departure_datetime)+'</td>'
+      +'<td>'+stBadge+'</td>'
+      +'</tr>';
+  }).join('');
+})();
+
+/* ── Table utilisateurs ── */
+(function(){
+  var tb=document.getElementById('usersTable'); if(!tb) return;
+  if(!allUsers.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink4);">Aucun utilisateur</td></tr>';return;}
+  var html='';
+  allUsers.forEach(function(u){
+    var name=((u.first_name||'')+' '+(u.last_name||'')).trim()||'—';
+    var roleB=u.role==='driver'?"<span class='badge-warn'>Conducteur</span>":u.role==='admin'?"<span class='badge-blue'>Admin</span>":"<span class='badge-ok'>Passager</span>";
+    html+='<tr>'
+      +'<td class="mono">#'+u.id+'</td>'
+      +'<td>'+name+'</td>'
+      +'<td style="color:var(--ink3);">'+(u.email||'—')+'</td>'
+      +'<td>'+roleB+'</td>'
+      +'<td>'+statusBadge(u)+'</td>'
+      +'<td>'
+        +'<button onclick="changeRole('+u.id+',\''+u.role+'\')" class="btn-cv btn-cv-sm" style="margin-right:4px;"><i class="fas fa-exchange-alt"></i> Rôle</button>'
+        +'<button onclick="applyPenalty('+u.id+')" class="btn-cv btn-cv-sm btn-cv-warn" style="margin-right:4px;"><i class="fas fa-exclamation-triangle"></i> Pénalité</button>'
+        +'<button onclick="toggleBlock('+u.id+','+(u.is_active!==false)+')" class="btn-cv btn-cv-sm btn-cv-err"><i class="fas fa-ban"></i> '+(u.is_active!==false?'Bloquer':'Débloquer')+'</button>'
+      +'</td>'
+      +'</tr>';
+  });
+  tb.innerHTML=html;
+})();
+
+/* ── Table réservations — FIX: balise <tr> complète, pas de </td> parasite ── */
+(function(){
+  var tb=document.getElementById('bookingsTable'); if(!tb) return;
+  if(!allBookings.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink4);">Aucune réservation</td></tr>';return;}
+  tb.innerHTML=allBookings.map(function(b){
+    return '<tr>'
+      +'<td class="mono">#'+b.id+'</td>'
+      +'<td>'+(b.passenger_name||'—')+'</td>'
+      +'<td>'+(b.driver_name||'—')+'</td>'
+      +'<td style="color:var(--blue);font-weight:700;">'+(b.amount||0)+' DA</td>'
+      +'<td>'+badge(b.status)+'</td>'
+      +'<td><button onclick="refundBooking('+b.id+')" class="btn-cv btn-cv-sm btn-cv-err"><i class="fas fa-credit-card"></i> Rembourser</button></td>'
+      +'</tr>';
+  }).join('');
+})();
+
+/* ── Filtres de recherche ── */
+document.getElementById('tripSearch')?.addEventListener('keyup',function(){
+  var v=this.value.toLowerCase();
+  document.querySelectorAll('#tripsTable tr').forEach(function(r){r.style.display=r.innerText.toLowerCase().includes(v)?'':'none';});
+});
+document.getElementById('userSearch')?.addEventListener('keyup',function(){
+  var v=this.value.toLowerCase();
+  document.querySelectorAll('#usersTable tr').forEach(function(r){r.style.display=r.innerText.toLowerCase().includes(v)?'':'none';});
+});
+document.getElementById('bookingSearch')?.addEventListener('keyup',function(){
+  var v=this.value.toLowerCase();
+  document.querySelectorAll('#bookingsTable tr').forEach(function(r){r.style.display=r.innerText.toLowerCase().includes(v)?'':'none';});
+});
+
+/* ── Navigation ── */
+var titles={dashboard:'Tableau de bord',trajets:'Gestion des trajets',utilisateurs:'Utilisateurs',reservations:'Réservations',statistiques:'Statistiques',parametres:'Paramètres'};
+function showPage(p){
+  document.querySelectorAll('.page-view').forEach(function(v){v.classList.remove('active');});
+  var el=document.getElementById(p); if(el) el.classList.add('active');
+  document.querySelectorAll('.sb-item[data-page]').forEach(function(n){n.classList.remove('active');});
+  var nav=document.querySelector('.sb-item[data-page="'+p+'"]'); if(nav) nav.classList.add('active');
+  document.getElementById('page-title').textContent=titles[p]||p;
+}
+document.querySelectorAll('.sb-item[data-page]').forEach(function(item){
+  item.addEventListener('click',function(){showPage(item.getAttribute('data-page'));});
+});
+
+/* ── CSRF ── */
+function getCookie(name){
+  var v=null;
+  if(document.cookie){
+    document.cookie.split(';').forEach(function(c){
+      c=c.trim();
+      if(c.startsWith(name+'=')) v=decodeURIComponent(c.substring(name.length+1));
+    });
+  }
+  return v;
+}
+
+/* ── Actions admin ── */
+function refundBooking(bookingId){
+  if(!confirm('Rembourser intégralement cette réservation ?')) return;
+  fetch('/refund-booking/',{
+    method:'POST',
+    headers:{'X-CSRFToken':getCookie('csrftoken')},
+    body:new URLSearchParams({booking_id:bookingId,reason:'admin_refund'})
+  }).then(function(){location.reload();});
+}
+
+function applyPenalty(userId){
+  var amount=prompt('Montant de la pénalité (DA) :','1000');
+  if(!amount) return;
+  var reason=prompt('Raison :','Comportement inapproprié');
+  if(!reason) return;
+  fetch('/admin/apply-penalty/',{
+    method:'POST',
+    headers:{'X-CSRFToken':getCookie('csrftoken')},
+    body:new URLSearchParams({user_id:userId,amount:amount,reason:reason})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.status==='ok') alert('✅ '+d.message);
+    else alert('❌ Erreur: '+(d.message||'Inconnue'));
+    location.reload();
+  })
+  .catch(function(){alert('❌ Erreur réseau');});
+}
+
+function changeRole(userId,currentRole){
+  var newRole=currentRole==='driver'?'passager':'conducteur';
+  if(!confirm('Changer le rôle de cet utilisateur en '+newRole+' ?')) return;
+  fetch('/admin/change-role/'+userId+'/',{
+    method:'POST',
+    headers:{'X-CSRFToken':getCookie('csrftoken')}
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.status==='ok') alert('✅ '+d.message);
+    else alert('❌ Erreur: '+(d.message||'Inconnue'));
+    location.reload();
+  })
+  .catch(function(){alert('❌ Erreur réseau');});
+}
+
+function toggleBlock(userId,isCurrentlyActive){
+  var action=isCurrentlyActive?'Bloquer':'Débloquer';
+  if(!confirm(action+' cet utilisateur ?')) return;
+  fetch('/admin/toggle-block/'+userId+'/',{
+    method:'POST',
+    headers:{'X-CSRFToken':getCookie('csrftoken')}
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.status==='ok') alert('✅ '+d.message);
+    else alert('❌ Erreur: '+(d.message||'Inconnue'));
+    location.reload();
+  })
+  .catch(function(){alert('❌ Erreur réseau');});
+}
+// ========== CHARGEMENT DES STATISTIQUES AVANCÉES ==========
+setTimeout(function() {
+    var raw = document.getElementById('chart-data');
+    if (!raw) {
+        console.error('❌ chart-data non trouvé');
+        return;
+    }
+    
+    var data = JSON.parse(raw.textContent);
+    console.log('📊 Données reçues:', data);
+    
+    // Taux d'occupation
+    var occupancyEl = document.getElementById('statOccupancy');
+    if (occupancyEl && data.occupancy_rate !== undefined) {
+        occupancyEl.textContent = data.occupancy_rate + '%';
+    }
+    
+    // Note moyenne
+    var ratingEl = document.getElementById('statRating');
+    if (ratingEl && data.avg_rating !== undefined) {
+        ratingEl.textContent = data.avg_rating > 0 ? data.avg_rating + '/5' : '—';
+    }
+    
+    // Taux d'annulation
+    var cancelEl = document.getElementById('statCancel');
+    if (cancelEl && data.cancel_rate !== undefined) {
+        cancelEl.textContent = data.cancel_rate + '%';
+    }
+    
+    // Total utilisateurs
+    var usersEl = document.getElementById('statNew');
+    if (usersEl && data.total_users !== undefined) {
+        usersEl.textContent = data.total_users;
+    }
+    
+    console.log('✅ Stats mises à jour:', {
+        occupation: data.occupancy_rate + '%',
+        rating: data.avg_rating,
+        cancel: data.cancel_rate + '%',
+        users: data.total_users
+    });
+}, 500);
+</script>
+{% endblock %}

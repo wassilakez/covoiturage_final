@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+.auth-wrap{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+.reg-card{background:white;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-lg);width:100%;max-width:600px;overflow:hidden;}
+.auth-top{background:var(--ink);padding:32px 36px 28px;position:relative;overflow:hidden;}
+.auth-top::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(0,82,255,0.25) 0%,transparent 70%);}
+.auth-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:white;margin-bottom:10px;position:relative;}
+.auth-logo span{color:var(--blue);}
+.auth-top h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:-0.3px;margin-bottom:4px;position:relative;}
+.auth-top p{font-size:13px;color:rgba(255,255,255,0.45);position:relative;}
+.reg-body{padding:28px 32px 32px;}
+.reg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.reg-group{margin-bottom:12px;}
+.reg-sep{border:none;border-top:1px solid var(--border);margin:20px 0;}
+.reg-section-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:14px;}
+.reg-section-sub{font-size:12px;color:var(--ink4);margin-bottom:16px;margin-top:-10px;}
+.driver-fields{display:none;margin-top:4px;}
+.auth-footer{text-align:center;margin-top:20px;font-size:13px;color:var(--ink3);}
+.auth-link{color:var(--blue);font-weight:600;text-decoration:none;}
+.fld-lbl{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px;display:block;}
+.fld{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;transition:all 0.2s;}
+.fld:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,82,255,0.1);}
+.btn-cv{font-family:'Syne',sans-serif;border:none;border-radius:40px;padding:12px 24px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-cv-primary{background:var(--blue);color:white;width:100%;}
+.btn-cv-primary:hover{background:var(--blue-dark);transform:translateY(-2px);}
+.error-message{background:#FEF2F2;border:1px solid #EF4444;border-radius:12px;padding:12px;margin-bottom:16px;color:#DC2626;font-size:13px;}
+.success-message{background:#E6F9F3;border:1px solid #00B37D;border-radius:12px;padding:12px;margin-bottom:16px;color:#00B37D;}
+</style>
+
+<div class="auth-wrap">
+  <div class="reg-card">
+    <div class="auth-top">
+      <div class="auth-logo">Cara<span>van</span></div>
+      <h2>Inscription</h2>
+      <p>Rejoignez la communauté Caravan</p>
+    </div>
+    <div class="reg-body">
+      <div id="messageContainer"></div>
+      <form id="registerForm">
+        <div class="reg-row">
+          <div>
+            <label class="fld-lbl">Prénom</label>
+            <input type="text" name="first_name" id="first_name" class="fld" placeholder="Prénom" required>
+          </div>
+          <div>
+            <label class="fld-lbl">Nom</label>
+            <input type="text" name="last_name" id="last_name" class="fld" placeholder="Nom" required>
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="fld-lbl">Nom d'utilisateur</label>
+          <input type="text" name="username" id="username" class="fld" placeholder="nom_utilisateur" required>
+        </div>
+        <div class="reg-group">
+          <label class="fld-lbl">Email</label>
+          <input type="email" name="email" id="email" class="fld" placeholder="votre@email.com" required>
+        </div>
+        <div class="reg-group">
+          <label class="fld-lbl">Téléphone</label>
+          <input type="tel" name="phone" id="phone" class="fld" placeholder="0550 123 456">
+        </div>
+        <div class="reg-row">
+          <div>
+            <label class="fld-lbl">Mot de passe</label>
+            <input type="password" name="password" id="password" class="fld" placeholder="Min. 8 caractères" required>
+          </div>
+          <div>
+            <label class="fld-lbl">Confirmer</label>
+            <input type="password" name="password_confirm" id="password_confirm" class="fld" placeholder="Confirmer" required>
+          </div>
+        </div>
+        <div class="reg-group">
+          <label class="fld-lbl">Rôle</label>
+          <select name="role" id="role" class="fld">
+            <option value="passenger">Passager</option>
+            <option value="driver">Conducteur</option>
+          </select>
+        </div>
+
+        <!-- Champs conducteur - toujours affichés pour conducteur -->
+        <div id="driverFields" style="display: none;">
+          <hr class="reg-sep">
+          <div class="reg-section-title">Informations du véhicule</div>
+          <div class="reg-row">
+            <div>
+              <label class="fld-lbl">Marque</label>
+              <input type="text" name="vehicle_brand" id="vehicle_brand" class="fld" placeholder="Ex: Renault">
+            </div>
+            <div>
+              <label class="fld-lbl">Modèle</label>
+              <input type="text" name="vehicle_model" id="vehicle_model" class="fld" placeholder="Ex: Symbol">
+            </div>
+          </div>
+          <div class="reg-row">
+            <div>
+              <label class="fld-lbl">Année</label>
+              <input type="number" name="vehicle_year" id="vehicle_year" class="fld" placeholder="2020">
+            </div>
+            <div>
+              <label class="fld-lbl">Couleur</label>
+              <input type="text" name="vehicle_color" id="vehicle_color" class="fld" placeholder="Blanc">
+            </div>
+          </div>
+          <div class="reg-row">
+            <div>
+              <label class="fld-lbl">Plaque d'immatriculation</label>
+              <input type="text" name="vehicle_license_plate" id="vehicle_license_plate" class="fld" placeholder="12345-16">
+            </div>
+            <div>
+              <label class="fld-lbl">Nombre de places</label>
+              <input type="number" name="vehicle_seats" id="vehicle_seats" class="fld" placeholder="4">
+            </div>
+          </div>
+          <hr class="reg-sep">
+          <div class="reg-section-title">Documents</div>
+          <div class="reg-group">
+            <label class="fld-lbl">Photo de profil</label>
+            <input type="file" name="profile_picture" id="profile_picture" class="fld" accept="image/*">
+          </div>
+          <div class="reg-group">
+            <label class="fld-lbl">Carte grise (obligatoire)</label>
+            <input type="file" name="car_registration" id="car_registration" class="fld" accept="image/*">
+            <div style="font-size:11px;color:var(--ink4);margin-top:5px;">Format JPG ou PNG, max 5 Mo</div>
+          </div>
+          <div class="reg-group">
+    <label class="fld-lbl">Ville</label>
+    <input type="text" name="city" id="city" class="fld" placeholder="Votre ville">
+</div>
+<div class="reg-group">
+    <label class="fld-lbl">Bio / À propos</label>
+    <textarea name="bio" id="bio" class="fld" rows="3" placeholder="Parlez-nous un peu de vous..."></textarea>
+</div>
+        </div>
+
+        <button type="submit" class="btn-cv btn-cv-primary btn-cv-full" style="margin-top:8px;">Créer mon compte</button>
+      </form>
+      <div class="auth-footer">
+        Déjà inscrit ? <a href="{% url 'login' %}" class="auth-link">Connectez-vous</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Fonction pour afficher/masquer les champs conducteur
+function toggleDriverFields() {
+  const role = document.getElementById('role').value;
+  const driverFields = document.getElementById('driverFields');
+  if (role === 'driver') {
+    driverFields.style.display = 'block';
+  } else {
+    driverFields.style.display = 'none';
+  }
+}
+
+// Écouter le changement de rôle
+document.getElementById('role').addEventListener('change', toggleDriverFields);
+
+// Appeler au chargement pour initialiser
+toggleDriverFields();
+
+// Soumission du formulaire
+// Soumission du formulaire - VERSION CORRIGÉE AVEC PHOTO
+document.getElementById('registerForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  
+  const pwd = document.getElementById('password').value;
+  const confirm = document.getElementById('password_confirm').value;
+  
+  if(pwd !== confirm){
+    showMessage('Les mots de passe ne correspondent pas', 'error');
+    return;
+  }
+  if(pwd.length < 8){
+    showMessage('Mot de passe trop court (min 8 caractères)', 'error');
+    return;
+  }
+  
+  // ✅ CRÉER FORMDATA (pour envoyer les fichiers)
+  const formData = new FormData();
+  
+  formData.append('first_name', document.getElementById('first_name').value);
+  formData.append('last_name', document.getElementById('last_name').value);
+  formData.append('username', document.getElementById('username').value);
+  formData.append('email', document.getElementById('email').value);
+  formData.append('password', pwd);
+  formData.append('password_confirm', confirm);
+  formData.append('role', document.getElementById('role').value);
+  formData.append('phone', document.getElementById('phone').value || '');
+  formData.append('city', document.getElementById('city')?.value || '');
+  formData.append('bio', document.getElementById('bio')?.value || '');
+  formData.append('vehicle_brand', document.getElementById('vehicle_brand')?.value || '');
+  formData.append('vehicle_model', document.getElementById('vehicle_model')?.value || '');
+  formData.append('vehicle_year', document.getElementById('vehicle_year')?.value || '');
+  formData.append('vehicle_color', document.getElementById('vehicle_color')?.value || '');
+  formData.append('vehicle_license_plate', document.getElementById('vehicle_license_plate')?.value || '');
+  formData.append('vehicle_seats', document.getElementById('vehicle_seats')?.value || '');
+  
+  // ✅ AJOUTER LA PHOTO (LE FICHIER)
+  const photoFile = document.getElementById('profile_picture').files[0];
+  if(photoFile) {
+    formData.append('profile_picture', photoFile);
+  }
+  
+  const carRegFile = document.getElementById('car_registration').files[0];
+  if(carRegFile) {
+    formData.append('car_registration', carRegFile);
+  }
+  
+  console.log('📤 Envoi du formulaire avec photo');
+  
+  try {
+    const response = await fetch('http://localhost:8081/api/auth/register/', {
+      method: 'POST',
+      body: formData  // ⚠️ PAS de Content-Type, le navigateur le fait
+    });
+    
+    const result = await response.json();
+    console.log('📥 Réponse:', result);
+    
+    const container = document.getElementById('messageContainer');
+    
+    if (response.ok) {
+      container.innerHTML = '<div class="success-message">✓ Inscription réussie ! Redirection vers la connexion...</div>';
+      setTimeout(() => {
+        window.location.href = '/login/';
+      }, 1500);
+    } else {
+      let errorMsg = '';
+      if (result.username) errorMsg = 'Nom d\'utilisateur déjà pris';
+      else if (result.email) errorMsg = 'Email déjà utilisé';
+      else if (result.phone) errorMsg = 'Téléphone déjà utilisé';
+      else errorMsg = Object.values(result).flat().join(', ');
+      
+      container.innerHTML = '<div class="error-message">✗ ' + errorMsg + '</div>';
+      setTimeout(() => { container.innerHTML = ''; }, 5000);
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    document.getElementById('messageContainer').innerHTML = '<div class="error-message">✗ Erreur de connexion au serveur</div>';
+  }
+});
+</script>
+{% endblock %}

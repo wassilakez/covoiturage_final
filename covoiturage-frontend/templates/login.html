@@ -1,0 +1,46 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<!-- LOGIN PAGE -->
+<style>
+.auth-wrap{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+.auth-card{background:white;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-lg);width:100%;max-width:440px;overflow:hidden;}
+.auth-top{background:var(--ink);padding:36px 36px 32px;position:relative;overflow:hidden;}
+.auth-top::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(0,82,255,0.25) 0%,transparent 70%);}
+.auth-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;margin-bottom:12px;position:relative;}
+.auth-logo span{color:var(--blue);}
+.auth-top h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:-0.3px;margin-bottom:4px;position:relative;}
+.auth-top p{font-size:13px;color:rgba(255,255,255,0.45);position:relative;}
+.auth-body{padding:28px 32px 32px;}
+.auth-group{margin-bottom:16px;}
+.auth-link{color:var(--blue);font-weight:600;text-decoration:none;}
+.auth-link:hover{opacity:0.8;}
+.auth-footer{text-align:center;margin-top:20px;font-size:13px;color:var(--ink3);}
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-top">
+      <div class="auth-logo">Cara<span>van</span></div>
+      <h2>Connexion</h2>
+      <p>Connectez-vous avec votre email</p>
+    </div>
+    <div class="auth-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="auth-group">
+          <label class="fld-lbl">Email</label>
+          <input type="email" name="email" class="fld" placeholder="votre@email.com" required>
+        </div>
+        <div class="auth-group">
+          <label class="fld-lbl">Mot de passe</label>
+          <input type="password" name="password" class="fld" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-cv btn-cv-primary btn-cv-full" style="margin-top:8px;">Se connecter</button>
+      </form>
+      <div class="auth-footer">
+        Pas encore de compte ? <a href="{% url 'register' %}" class="auth-link">Inscrivez-vous</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

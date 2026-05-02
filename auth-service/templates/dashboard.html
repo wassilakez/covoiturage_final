@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caravan - Dashboard</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f2f5; }
+        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        button { background: #2C7DA0; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; margin: 5px; }
+        pre { background: #f4f4f4; padding: 12px; border-radius: 8px; overflow-x: auto; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+<h1>Caravan – Tableau de bord</h1>
+<div id="profile" class="card">
+    <h2>Profil utilisateur</h2>
+    <div id="profileInfo">Chargement...</div>
+</div>
+
+<div class="card">
+    <h2>Payment Service</h2>
+    <button onclick="getWallet()">Voir wallet</button>
+    <button onclick="addBalance()">Ajouter 5000 DA</button>
+    <pre id="paymentResult"></pre>
+</div>
+
+<div class="card">
+    <h2>Trip Service</h2>
+    <button onclick="listCities()">Lister les villes</button>
+    <button onclick="createVehicle()">Créer un véhicule</button>
+    <button onclick="createTrip()">Créer un trajet (Alger→Oran)</button>
+    <pre id="tripResult"></pre>
+</div>
+
+<div class="card">
+    <h2>Booking Service</h2>
+    <button onclick="createBooking()">Réserver (trip_id=1)</button>
+    <pre id="bookingResult"></pre>
+</div>
+
+<script>
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        alert("Non connecté. Redirection vers login.");
+        window.location.href = "/login/";
+    }
+
+    // Profil
+    fetch("/api/auth/profile/", {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(r => r.json())
+    .then(data => {
+        const user = data.user;
+        const profile = data.profile;
+        document.getElementById("profileInfo").innerHTML = `
+            <p><strong>Nom :</strong> ${user.username}</p>
+            <p><strong>Email :</strong> ${user.email}</p>
+            <p><strong>Rôle :</strong> ${user.role}</p>
+            <p><strong>Trajets passager :</strong> ${profile.trips_as_passenger}</p>
+            <p><strong>Trajets conducteur :</strong> ${profile.trips_as_driver}</p>
+            <p><strong>ID utilisateur :</strong> ${user.id}</p>
+        `;
+    })
+    .catch(err => {
+        document.getElementById("profileInfo").innerHTML = '<span class="error">Erreur chargement profil. Token invalide ?</span>';
+    });
+
+    // Payment
+    async function getWallet() {
+        const res = await fetch("/api/payments/wallet/");
+        const data = await res.json();
+        document.getElementById("paymentResult").innerText = JSON.stringify(data, null, 2);
+    }
+    async function addBalance() {
+        const res = await fetch("/api/payments/wallet/add-balance/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: 5000 })
+        });
+        const data = await res.json();
+        document.getElementById("paymentResult").innerText = JSON.stringify(data, null, 2);
+    }
+
+    // Trip
+    async function listCities() {
+        const res = await fetch("/api/cities/");
+        const data = await res.json();
+        document.getElementById("tripResult").innerText = JSON.stringify(data.slice(0, 5), null, 2);
+    }
+    async function createVehicle() {
+        const res = await fetch("/api/vehicles/create/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({ brand: "Renault", model: "Clio", license_plate: "XYZ" + Date.now(), seats: 4 })
+        });
+        const data = await res.json();
+        document.getElementById("tripResult").innerText = JSON.stringify(data, null, 2);
+    }
+    async function createTrip() {
+        const vehicleRes = await fetch("/api/vehicles/", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        const vehicles = await vehicleRes.json();
+        if (!vehicles.length) {
+            document.getElementById("tripResult").innerText = "Aucun véhicule. Créez d'abord un véhicule.";
+            return;
+        }
+        const vehicleId = vehicles[0].id;
+        const res = await fetch("/api/trips/create/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({
+                departure_city: 16,
+                arrival_city: 31,
+                departure_datetime: "2026-05-01T10:00:00",
+                price_per_seat: 1200,
+                total_seats: 4,
+                available_seats: 4,
+                vehicle_id: vehicleId
+            })
+        });
+        const data = await res.json();
+        document.getElementById("tripResult").innerText = JSON.stringify(data, null, 2);
+    }
+
+    // Booking
+    async function createBooking() {
+        const userId = 39;
+        const res = await fetch("/api/bookings/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({ trip_id: 1, seats: 1, user_id: userId })
+        });
+        const data = await res.json();
+        document.getElementById("bookingResult").innerText = JSON.stringify(data, null, 2);
+    }
+</script>
+</body>
+</html>

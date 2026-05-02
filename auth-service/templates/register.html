@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Inscription{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-glass">
+        <div class="auth-visual">
+            <div class="brand-badge">
+                <i class="fas fa-caravan"></i>
+                <span>Caravan</span>
+            </div>
+            <h1>Bienvenue !</h1>
+            <p>Rejoignez la plus grande communauté de covoiturage en Algérie. Voyagez mieux, voyagez ensemble.</p>
+            <div class="floating-cards">
+                <span class="mini-card"><i class="fas fa-shield-alt me-1"></i> Sécurisé</span>
+                <span class="mini-card"><i class="fas fa-tag me-1"></i> Économique</span>
+                <span class="mini-card"><i class="fas fa-users me-1"></i> Communauté</span>
+            </div>
+        </div>
+        <div class="auth-form">
+            <h2>Créer un compte</h2>
+            <p>Commencez votre aventure avec nous</p>
+            
+            <form id="registerForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="field">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="first_name" placeholder="Prénom" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="last_name" placeholder="Nom" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                
+                <div class="field">
+                    <i class="fas fa-user-tag"></i>
+                    <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+                </div>
+                
+                <div class="field">
+                    <i class="fas fa-phone"></i>
+                    <input type="tel" id="phone" placeholder="Téléphone (optionnel)">
+                </div>
+                
+                <div class="field">
+                    <i class="fas fa-tag"></i>
+                    <select id="role">
+                        <option value="passenger">🚗 Passager</option>
+                        <option value="driver">🚙 Conducteur</option>
+                        <option value="both">🔄 Passager & Conducteur</option>
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Mot de passe" required>
+                </div>
+                
+                <div class="field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password_confirm" placeholder="Confirmer le mot de passe" required>
+                </div>
+                
+                <button type="submit" class="btn-primary-custom">
+                    <i class="fas fa-user-plus me-2"></i>S'inscrire
+                </button>
+            </form>
+            
+            <div class="switch">
+                Déjà inscrit ? <a href="/login/">Se connecter</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const pwd = document.getElementById("password").value;
+    const pwdConfirm = document.getElementById("password_confirm").value;
+
+    if (pwd !== pwdConfirm) {
+        alert("❌ Les mots de passe ne correspondent pas");
+        return;
+    }
+
+    if (pwd.length < 8) {
+        alert("❌ Le mot de passe doit contenir au moins 8 caractères");
+        return;
+    }
+
+    const data = {
+        email: document.getElementById("email").value,
+        username: document.getElementById("username").value,
+        password: pwd,
+        password_confirm: pwdConfirm,
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        phone: document.getElementById("phone").value || null,
+        role: document.getElementById("role").value
+    };
+
+    try {
+        const res = await fetch(`${API_AUTH}/register/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        
+        if (res.ok) {
+            localStorage.setItem("access_token", result.access);
+            localStorage.setItem("user_id", result.user.id);
+            alert("✅ Inscription réussie ! Bienvenue " + result.user.first_name);
+            window.location.href = "/profile/";
+        } else {
+            let msg = "❌ Erreur d'inscription :\n";
+            for (const [key, val] of Object.entries(result)) {
+                msg += `${key} : ${val}\n`;
+            }
+            alert(msg);
+        }
+    } catch (err) {
+        alert("❌ Erreur de connexion au serveur");
+    }
+});
+</script>
+{% endblock %}
