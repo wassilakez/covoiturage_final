@@ -194,11 +194,19 @@ def home(request):
 
 
 def register(request):
+    wants_json = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+    def fail(message, status=400, errors=None):
+        if wants_json:
+            payload = errors if errors is not None else {'error': message}
+            return JsonResponse(payload, status=status)
+        messages.error(request, message)
+        return render(request, 'register.html')
+
     if request.method == 'POST':
         password = request.POST.get('password')
         if password != request.POST.get('password_confirm'):
-            messages.error(request, 'Les mots de passe ne correspondent pas')
-            return render(request, 'register.html')
+            return fail('Les mots de passe ne correspondent pas')
 
         user_data = {
             'username': request.POST.get('username'),
@@ -208,6 +216,14 @@ def register(request):
             'last_name':  request.POST.get('last_name',''),
             'phone':      request.POST.get('phone',''),
             'role':       request.POST.get('role','passenger'),
+            'city':       request.POST.get('city',''),
+            'bio':        request.POST.get('bio',''),
+            'vehicle_brand': request.POST.get('vehicle_brand',''),
+            'vehicle_model': request.POST.get('vehicle_model',''),
+            'vehicle_year': request.POST.get('vehicle_year') or None,
+            'vehicle_color': request.POST.get('vehicle_color',''),
+            'vehicle_license_plate': request.POST.get('vehicle_license_plate',''),
+            'vehicle_seats': request.POST.get('vehicle_seats') or None,
         }
         try:
             resp = requests.post("http://auth-service:8081/api/auth/register/", json=user_data, timeout=10)
@@ -215,14 +231,20 @@ def register(request):
                 user_id = resp.json().get('user', {}).get('id')
                 sync_user_to_booking_service(user_id)
                 if request.POST.get('role') == 'driver':
+                    def parse_int(value, default):
+                        try:
+                            return int(value)
+                        except (TypeError, ValueError):
+                            return default
+
                     requests.post("http://trip-service:8002/api/vehicles/create/", json={
                         'owner_id': user_id,
                         'brand':   request.POST.get('vehicle_brand'),
                         'model':   request.POST.get('vehicle_model'),
-                        'year':    int(request.POST.get('vehicle_year', 2020)),
+                        'year':    parse_int(request.POST.get('vehicle_year'), 2020),
                         'color':   request.POST.get('vehicle_color'),
                         'license_plate': request.POST.get('vehicle_license_plate'),
-                        'seats':   int(request.POST.get('vehicle_seats', 4)),
+                        'seats':   parse_int(request.POST.get('vehicle_seats'), 4),
                         'vehicle_type': 'car',
                     }, timeout=5)
                 files = {}
@@ -234,12 +256,18 @@ def register(request):
                                       files=files, data={'user_id': user_id}, timeout=10)
                     except Exception as e:
                         print(f"Erreur upload: {e}")
+                if wants_json:
+                    return JsonResponse({'message': 'Inscription réussie', 'redirect': '/login/'}, status=201)
                 messages.success(request, 'Inscription réussie ! Connectez-vous.')
                 return redirect('login')
             else:
-                messages.error(request, f'Erreur: {resp.text}')
+                try:
+                    errors = resp.json()
+                except ValueError:
+                    errors = {'error': resp.text}
+                return fail(f'Erreur: {resp.text}', status=resp.status_code, errors=errors)
         except Exception as e:
-            messages.error(request, f'Service indisponible: {e}')
+            return fail(f'Service indisponible: {e}', status=503)
     return render(request, 'register.html')
 
 

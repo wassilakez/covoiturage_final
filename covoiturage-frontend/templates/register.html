@@ -37,7 +37,8 @@
     </div>
     <div class="reg-body">
       <div id="messageContainer"></div>
-      <form id="registerForm">
+      <form id="registerForm" method="post" action="{% url 'register' %}" enctype="multipart/form-data">
+        {% csrf_token %}
         <div class="reg-row">
           <div>
             <label class="fld-lbl">Prénom</label>
@@ -177,43 +178,17 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     return;
   }
   
-  // ✅ CRÉER FORMDATA (pour envoyer les fichiers)
-  const formData = new FormData();
-  
-  formData.append('first_name', document.getElementById('first_name').value);
-  formData.append('last_name', document.getElementById('last_name').value);
-  formData.append('username', document.getElementById('username').value);
-  formData.append('email', document.getElementById('email').value);
-  formData.append('password', pwd);
-  formData.append('password_confirm', confirm);
-  formData.append('role', document.getElementById('role').value);
-  formData.append('phone', document.getElementById('phone').value || '');
-  formData.append('city', document.getElementById('city')?.value || '');
-  formData.append('bio', document.getElementById('bio')?.value || '');
-  formData.append('vehicle_brand', document.getElementById('vehicle_brand')?.value || '');
-  formData.append('vehicle_model', document.getElementById('vehicle_model')?.value || '');
-  formData.append('vehicle_year', document.getElementById('vehicle_year')?.value || '');
-  formData.append('vehicle_color', document.getElementById('vehicle_color')?.value || '');
-  formData.append('vehicle_license_plate', document.getElementById('vehicle_license_plate')?.value || '');
-  formData.append('vehicle_seats', document.getElementById('vehicle_seats')?.value || '');
-  
-  // ✅ AJOUTER LA PHOTO (LE FICHIER)
-  const photoFile = document.getElementById('profile_picture').files[0];
-  if(photoFile) {
-    formData.append('profile_picture', photoFile);
-  }
-  
-  const carRegFile = document.getElementById('car_registration').files[0];
-  if(carRegFile) {
-    formData.append('car_registration', carRegFile);
-  }
+  // Envoyer au frontend Django. Il appelle ensuite auth-service via le
+  // réseau Docker interne, donc le navigateur ne dépend pas de localhost:8081.
+  const formData = new FormData(this);
   
   console.log('📤 Envoi du formulaire avec photo');
   
   try {
-    const response = await fetch('http://localhost:8081/api/auth/register/', {
+    const response = await fetch(this.action, {
       method: 'POST',
-      body: formData  // ⚠️ PAS de Content-Type, le navigateur le fait
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
+      body: formData
     });
     
     const result = await response.json();
