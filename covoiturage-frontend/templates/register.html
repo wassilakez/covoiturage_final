@@ -178,8 +178,8 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     return;
   }
   
-  // Envoyer au frontend Django. Il appelle ensuite auth-service via le
-  // réseau Docker interne, donc le navigateur ne dépend pas de localhost:8081.
+  // Envoyer au frontend Django. Le proxy choisit ensuite l'URL auth-service
+  // correcte selon l'environnement (Docker ou exécution locale).
   const formData = new FormData(this);
   
   console.log('📤 Envoi du formulaire avec photo');
@@ -191,7 +191,13 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       body: formData
     });
     
-    const result = await response.json();
+    const responseText = await response.text();
+    let result = {};
+    try {
+      result = responseText ? JSON.parse(responseText) : {};
+    } catch (parseError) {
+      result = {error: responseText || 'Réponse serveur invalide'};
+    }
     console.log('📥 Réponse:', result);
     
     const container = document.getElementById('messageContainer');
@@ -199,17 +205,17 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     if (response.ok) {
       container.innerHTML = '<div class="success-message">✓ Inscription réussie ! Redirection vers la connexion...</div>';
       setTimeout(() => {
-        window.location.href = '/login/';
+        window.location.href = result.redirect || '/login/';
       }, 1500);
     } else {
       let errorMsg = '';
       if (result.username) errorMsg = 'Nom d\'utilisateur déjà pris';
       else if (result.email) errorMsg = 'Email déjà utilisé';
-      else if (result.phone) errorMsg = 'Téléphone déjà utilisé';
+      else if (result.phone) errorMsg = Array.isArray(result.phone) ? result.phone.join(', ') : result.phone;
+      else if (result.error) errorMsg = result.error;
       else errorMsg = Object.values(result).flat().join(', ');
       
-      container.innerHTML = '<div class="error-message">✗ ' + errorMsg + '</div>';
-      setTimeout(() => { container.innerHTML = ''; }, 5000);
+      container.innerHTML = '<div class="error-message">✗ ' + (errorMsg || 'Erreur serveur ' + response.status) + '</div>';
     }
   } catch (error) {
     console.error('Erreur:', error);
