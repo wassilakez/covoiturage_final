@@ -32,6 +32,15 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
+        def optional_int(field_name):
+            value = request.data.get(field_name)
+            if value in (None, ''):
+                return None
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return None
+
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -49,10 +58,10 @@ class RegisterView(generics.CreateAPIView):
             # Sauvegarde des infos véhicule
             user.vehicle_brand = request.data.get('vehicle_brand', '')
             user.vehicle_model = request.data.get('vehicle_model', '')
-            user.vehicle_year = request.data.get('vehicle_year', 0)
+            user.vehicle_year = optional_int('vehicle_year')
             user.vehicle_color = request.data.get('vehicle_color', '')
             user.vehicle_license_plate = request.data.get('vehicle_license_plate', '')
-            user.vehicle_seats = request.data.get('vehicle_seats', 0)
+            user.vehicle_seats = optional_int('vehicle_seats')
             user.save()
             
                         # ✅ SAUVEGARDE PHOTO AVEC DJANGO (propre)
