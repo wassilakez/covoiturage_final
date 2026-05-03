@@ -57,33 +57,22 @@ def _service_endpoint(base_url, api_prefix, path):
     return f"{base_url}{api_prefix}/{path}/"
 
 
-def _request_with_local_fallback(method, primary_url, local_url, **kwargs):
-    try:
-        return requests.request(method, primary_url, **kwargs)
-    except requests.RequestException:
-        if primary_url != local_url:
-            return requests.request(method, local_url, **kwargs)
-        raise
-
-
 def _auth_request(method, path, **kwargs):
-    primary = _service_endpoint(
+    url = _service_endpoint(
         getattr(settings, 'AUTH_SERVICE_URL', 'http://auth-service:8081'),
         '/api/auth',
         path,
     )
-    local = _service_endpoint('http://localhost:8081', '/api/auth', path)
-    return _request_with_local_fallback(method, primary, local, **kwargs)
+    return requests.request(method, url, **kwargs)
 
 
 def _trip_request(method, path, **kwargs):
-    primary = _service_endpoint(
+    url = _service_endpoint(
         getattr(settings, 'TRIP_SERVICE_URL', 'http://trip-service:8002/api'),
         '/api',
         path,
     )
-    local = _service_endpoint('http://localhost:8082/api', '/api', path)
-    return _request_with_local_fallback(method, primary, local, **kwargs)
+    return requests.request(method, url, **kwargs)
 
 
 def _normalize_phone(phone):
