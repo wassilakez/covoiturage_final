@@ -39,10 +39,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     # Champs du véhicule pour les conducteurs
     vehicle_brand = serializers.CharField(write_only=True, required=False, allow_blank=True)
     vehicle_model = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    vehicle_year = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    vehicle_year = serializers.CharField(write_only=True, required=False, allow_blank=True, allow_null=True)
     vehicle_color = serializers.CharField(write_only=True, required=False, allow_blank=True)
     vehicle_license_plate = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    vehicle_seats = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    vehicle_seats = serializers.CharField(write_only=True, required=False, allow_blank=True, allow_null=True)
     city = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:

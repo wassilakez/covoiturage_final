@@ -256,10 +256,10 @@ def register(request):
             'bio':        request.POST.get('bio',''),
             'vehicle_brand': request.POST.get('vehicle_brand',''),
             'vehicle_model': request.POST.get('vehicle_model',''),
-            'vehicle_year': request.POST.get('vehicle_year') or None,
+            'vehicle_year': request.POST.get('vehicle_year') or '',
             'vehicle_color': request.POST.get('vehicle_color',''),
             'vehicle_license_plate': request.POST.get('vehicle_license_plate',''),
-            'vehicle_seats': request.POST.get('vehicle_seats') or None,
+            'vehicle_seats': request.POST.get('vehicle_seats') or '',
         }
         try:
             resp = _auth_request('post', 'register', json=user_data, timeout=10)
